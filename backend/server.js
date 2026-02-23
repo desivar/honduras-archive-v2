@@ -68,6 +68,16 @@ app.use('/api/auth', authRoutes);
 app.get('/', (req, res) => {
   res.send('Honduras Archive API');
 });
+// 👇 Add this
+app.get('/api/archive/:id', async (req, res) => {
+  try {
+    const item = await Archive.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    res.json(item);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Upload
 app.post('/api/archive', upload.single('image'), async (req, res) => {
@@ -129,6 +139,8 @@ app.get('/api/archive', async (req, res) => {
   try {
     const { search, letter } = req.query;
     let query = {};
+
+
 
     // Search logic
     if (search) {

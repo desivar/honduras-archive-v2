@@ -71,5 +71,133 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {  // 👈 add l
           </p>
         )}
       </div>
+       {/* User Info / Login */}
+      {user ? (
+        <div style={{
+          backgroundColor: 'rgba(255,255,255,0.1)',
+          padding: '12px',
+          borderRadius: '6px',
+          marginBottom: '20px'
+        }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', marginBottom: '5px', color: '#ACA37E' }}>
+            Logged in as:
+          </p>
+          <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '10px' }}>
+            {user.username}
+          </p>
+          <button
+            onClick={handleLogout}
+            style={{
+              width: '100%',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              color: '#EFE7DD',
+              border: '1px solid #ACA37E',
+              padding: '6px',
+              borderRadius: '4px',
+              fontSize: '0.85rem',
+              cursor: 'pointer'
+            }}
+          >
+            🚪 Logout
+          </button>
+        </div>
+      ) : (
+        <div style={{ marginBottom: '20px' }}>
+          <Link 
+            to="/login"
+            style={{
+              display: 'block',
+              backgroundColor: 'rgba(255,255,255,0.15)',
+              color: '#EFE7DD',
+              textAlign: 'center',
+              padding: '10px',
+              borderRadius: '6px',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 'bold',
+              marginBottom: '8px'
+            }}
+          >
+            🔐 Admin Login
+          </Link>
+        </div>
+      )}
+      
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <Link to="/" style={linkStyle}>🏠 Home / Search</Link>
+        
+        {user && user.role === 'admin' && (
+          <Link to="/upload" style={{...linkStyle, fontWeight: 'bold'}}>📤 Upload New File</Link>
+        )}
+        
+        <Link to="/about" style={linkStyle}>📖 About the Project</Link>
+        <Link to="/contact" style={linkStyle}>✉️ Contact Us</Link>
+        
+        <hr style={{ borderColor: 'rgba(172, 163, 126, 0.5)', width: '100%', margin: '15px 0' }} />
+        
+        <h3 style={headerStyle}>COLLECTIONS</h3>
+        <Link to="/category/Portrait" style={linkStyle}>👤 Portrait</Link>
+        <Link to="/category/News" style={linkStyle}>📰 News & Clippings</Link>
+        
+        <h3 style={headerStyle}>NEWS ABOUT VITAL RECORDS</h3>
+        <Link to="/type/Birth" style={linkStyle}>🍼 News about Births (DOB)</Link>
+        <Link to="/type/Marriage" style={linkStyle}>💍 News about Marriages</Link>
+        <Link to="/type/Death" style={linkStyle}>⚰️ News about Deaths (DOD)</Link>
+      </nav>
 
-      {/* rest of your sidebar stays exactly the same... */}
+      <div style={{ marginTop: '30px' }}>
+        <h3 style={headerStyle}>SURNAME INDEX</h3>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(5, 1fr)', 
+          gap: '8px',
+          marginTop: '12px'
+        }}>
+          {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l => (
+            <Link 
+              key={l} 
+              to={'/?letter=' + l}
+              style={{ 
+                color: '#EFE7DD', 
+                textDecoration: 'none', 
+                fontSize: '0.85rem',
+                textAlign: 'center',
+                padding: '5px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                transition: 'all 0.2s'
+              }}
+            >
+              {l}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 'auto', paddingTop: '15px', paddingBottom: '20px' }}>
+        <a
+          href="https://paypal.me/yourusername"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'block',
+            backgroundColor: '#0070ba',
+            color: 'white',
+            textAlign: 'center',
+            padding: '10px',
+            borderRadius: '6px',
+            textDecoration: 'none',
+            fontSize: '0.9rem',
+            fontWeight: 'bold'
+          }}
+        >
+          ❤️ Support the Archive
+        </a>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
+
+      

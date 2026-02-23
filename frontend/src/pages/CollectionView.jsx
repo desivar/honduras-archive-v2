@@ -3,34 +3,33 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import ResultCard from '../components/ResultCard';
 
-const CollectionView = () => {
-  // 'type' will be 'category', 'type', or 'alpha' based on the URL
-  // 'value' will be the specific item (e.g., 'Portrait', 'Birth', or 'A')
-  const { type, value } = useParams(); 
+const CollectionView = ({ type }) => {  // 👈 type comes from props, not useParams
+  const { value } = useParams();        // 👈 only value comes from URL
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
- const fetchCollection = async () => {
- setLoading(true);
- try {
- const queryParam = type === 'alpha' ? 'letter' : type;
- const res = await axios.get(`https://honduras-archive.onrender.com/api/search?${queryParam}=${value}`);
- setResults(res.data);
-  } catch (err) {
- console.error("Fetch error:", err);
- } finally {
- setLoading(false);
- }
- };
- fetchCollection();
-}, [type, value]);
-
+  useEffect(() => {
+    const fetchCollection = async () => {
+      setLoading(true);
+      try {
+        // 👇 Fix 1: correct query param mapping
+        const queryParam = type === 'letter' ? 'letter' : 'category';
+        
+        // 👇 Fix 2: correct API endpoint + res.data.items
+        const res = await axios.get(`https://honduras-archive.onrender.com/api/archive?${queryParam}=${value}`);
+        setResults(res.data.items);  // 👈 Fix 3: was res.data
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCollection();
+  }, [type, value]);
 
   return (
     <div style={{ 
-      marginLeft: '260px', // Matches your sidebar width
-      padding: '40px', 
+      padding: '40px',   // 👈 removed marginLeft, App.jsx already handles this
       backgroundColor: '#EFE7DD', 
       minHeight: '100vh' 
     }}>
@@ -47,7 +46,7 @@ const CollectionView = () => {
         paddingBottom: '10px',
         textTransform: 'capitalize'
       }}>
-        {type.replace('alpha', 'Surname Index')}: {value}
+        {type === 'letter' ? 'Surname Index' : 'Collection'}: {value}
       </h2>
 
       {loading ? (

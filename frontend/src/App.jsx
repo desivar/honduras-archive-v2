@@ -16,6 +16,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0); // 📊 Added state for Magnitude
+  const [lastUpdate, setLastUpdate] = useState(null); // 👈 add this
 
   useEffect(() => {
     // 1. Restore User Session
@@ -34,6 +35,7 @@ function App() {
       try {
         const response = await axios.get('https://honduras-archive.onrender.com/api/archive');
         setTotalCount(response.data.totalCount || 0);
+        setLastUpdate(response.data.lastUpdate || null); // 👈 add this
       } catch (err) {
         console.error("Error fetching stats:", err);
       } finally {
@@ -71,7 +73,8 @@ function App() {
       <div style={{ display: 'flex', backgroundColor: '#EFE7DD', minHeight: '100vh' }}>
         
         {/* ✅ Sidebar now receives user AND totalCount */}
-        <Sidebar user={user} onLogout={handleLogout} totalCount={totalCount} />
+      
+<Sidebar user={user} onLogout={handleLogout} totalCount={totalCount} lastUpdate={lastUpdate} />
         
         {/* ✅ Main Content Area: MarginLeft matches Sidebar width to prevent overlapping */}
         <main style={{ 

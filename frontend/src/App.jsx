@@ -101,7 +101,7 @@ function App() {
 
             {/* Archive Navigation */}
             <Route path="/category/:value" element={<CollectionView type="category" />} />
-            <Route path="/type/:value" element={<CollectionView type="recordType" />} />
+            
             <Route path="/alpha/:value" element={<CollectionView type="letter" />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />

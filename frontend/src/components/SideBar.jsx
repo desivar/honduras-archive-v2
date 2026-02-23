@@ -140,9 +140,9 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {  // 👈 add l
         <Link to="/category/News" style={linkStyle}>📰 News & Clippings</Link>
         
         <h3 style={headerStyle}>NEWS ABOUT VITAL RECORDS</h3>
-        <Link to="/type/Birth" style={linkStyle}>🍼 News about Births (DOB)</Link>
-        <Link to="/type/Marriage" style={linkStyle}>💍 News about Marriages</Link>
-        <Link to="/type/Death" style={linkStyle}>⚰️ News about Deaths (DOD)</Link>
+        <Link to="/category/Birth" style={linkStyle}>🍼 News about Births (DOB)</Link>
+        <Link to="/category/Marriage" style={linkStyle}>💍 News about Marriages</Link>
+        <Link to="/category/Death" style={linkStyle}>⚰️ News about Deaths (DOD)</Link>
       </nav>
 
       <div style={{ marginTop: '30px' }}>
@@ -156,7 +156,8 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {  // 👈 add l
           {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l => (
             <Link 
               key={l} 
-              to={'/?letter=' + l}
+              // ✅ Fix
+              to={'/alpha/' + l}
               style={{ 
                 color: '#EFE7DD', 
                 textDecoration: 'none', 

@@ -104,7 +104,7 @@ const About = () => {
             { icon: '📋', title: 'Certified Record Management', sub: 'RMU Certification' },
             { icon: '🔍', title: 'Family History Research', sub: 'Certified Researcher' },
             { icon: '📜', title: 'Advanced Research Certificate', sub: 'In progress — completing August 2025' },
-            { icon: '🏛️', title: 'Associate Degree', sub: 'Family History Research', 'In progress — completing August 2025' },
+            { icon: '🏛️', title: 'Associate Degree', sub: 'Family History Research', 'In progress — completing August 2025'},
           ].map((item, i) => (
             <div key={i} style={{
               backgroundColor: '#EFE7DD',
@@ -126,42 +126,63 @@ const About = () => {
 
       {/* What you can find */}
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        padding: '30px',
-        marginBottom: '30px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        borderLeft: '5px solid #737958'
+  backgroundColor: 'white',
+  borderRadius: '8px',
+  padding: '30px',
+  marginBottom: '30px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+  borderLeft: '5px solid #ACA37E'
+}}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+    <img 
+      src={profilePhoto} 
+      alt="Creator portrait"
+      style={{
+        width: '150px',
+        height: '150px',
+        borderRadius: '50%',
+        objectFit: 'cover',
+        border: '4px solid #737958',
+        flexShrink: 0
+      }}
+    />
+    <h2 style={{ color: '#737958', margin: 0, fontSize: '1.4rem' }}>
+      👤 About the Creator
+    </h2>
+  </div>
+
+  <p style={{ color: '#444', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '20px' }}>
+    I am a Software Engineer and passionate genealogical researcher with deep roots in Honduran history. 
+    I built this archive to bridge the gap between technology and historical preservation.
+  </p>
+
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
+    {[
+      { icon: '🎓', title: 'B.S. Software Development', sub: 'BYU-Idaho' },
+      { icon: '🌳', title: 'FamilySearch Volunteer', sub: 'Since 2009' },
+      { icon: '📋', title: 'Certified Record Management', sub: 'RMU Certification' },
+      { icon: '🔍', title: 'Family History Research', sub: 'Certified Researcher' },
+      { icon: '📜', title: 'Advanced Research Certificate', sub: 'In progress — completing August 2025' },
+      { icon: '🏛️', title: 'Associate Degree', sub: 'Family History Research' },
+    ].map((item, i) => (
+      <div key={i} style={{
+        backgroundColor: '#EFE7DD',
+        borderRadius: '6px',
+        padding: '15px',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '12px'
       }}>
-        <h2 style={{ color: '#737958', marginTop: 0, fontSize: '1.4rem' }}>
-          📰 What You Can Find Here
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
-          {[
-            { icon: '👤', label: 'Portraits' },
-            { icon: '📰', label: 'News & Clippings' },
-            { icon: '🍼', label: 'Birth Announcements' },
-            { icon: '💍', label: 'Marriage Records' },
-            { icon: '⚰️', label: 'Death Notices' },
-            { icon: '🌎', label: 'International Records' },
-          ].map((item, i) => (
-            <div key={i} style={{
-              backgroundColor: '#EFE7DD',
-              borderRadius: '6px',
-              padding: '12px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              color: '#444',
-              fontSize: '0.95rem'
-            }}>
-              <span>{item.icon}</span> {item.label}
-            </div>
-          ))}
+        <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
+        <div>
+          <p style={{ margin: 0, fontWeight: 'bold', color: '#737958', fontSize: '0.95rem' }}>{item.title}</p>
+          <p style={{ margin: 0, color: '#666', fontSize: '0.85rem' }}>{item.sub}</p>
         </div>
       </div>
-
-      {/* Footer note */}
+    ))}
+  </div>
+</div>
+ {/* Footer note */}
       <div style={{
         textAlign: 'center',
         padding: '20px',

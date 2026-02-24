@@ -50,7 +50,7 @@ const SearchPage = () => {
       
       {/* 🧹 Removed the Magnitude box from here since it's moving to the Sidebar */}
 
-      <h1 style={{ color: '#737958', marginBottom: '20px', fontSize: '2.5rem' }}>Memoirs from Honduras</h1>
+      <h1 style={{ color: '#737958', marginBottom: '20px', fontSize: '2.5rem' }}>Recuerdos de Honduras</h1>
       
       <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
         <input 

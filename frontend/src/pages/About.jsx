@@ -59,7 +59,7 @@ const About = () => {
         borderLeft: '5px solid #737958'
       }}>
         <h2 style={{ color: '#737958', marginTop: 0, fontSize: '1.4rem' }}>
-          🎯 Our Mission
+          🎯 Mission
         </h2>
         <p style={{ color: '#444', lineHeight: 1.8, fontSize: '1.05rem', margin: 0 }}>
           This archive was created because valuable historical information and portraits are buried in old 

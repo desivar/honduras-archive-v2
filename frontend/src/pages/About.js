@@ -104,7 +104,7 @@ const About = () => {
             { icon: '📋', title: 'Certified Record Management', sub: 'RMU Certification' },
             { icon: '🔍', title: 'Family History Research', sub: 'Certified Researcher' },
             { icon: '📜', title: 'Advanced Research Certificate', sub: 'In progress — completing August 2025' },
-            { icon: '🏛️', title: 'Associate Degree', sub: 'Family History Research' },
+            { icon: '🏛️', title: 'Associate Degree', sub: 'Family History Research', 'In progress — completing August 2025' },
           ].map((item, i) => (
             <div key={i} style={{
               backgroundColor: '#EFE7DD',

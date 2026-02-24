@@ -1,0 +1,38 @@
+{
+  "sidebar": {
+    "title": "Newspaper Archive",
+    "magnitude": "Magnitude",
+    "records": "Records",
+    "lastUpdate": "Last Update",
+    "loggedAs": "Logged in as",
+    "logout": "Logout",
+    "login": "Admin Login",
+    "home": "Home / Search",
+    "upload": "Upload New File",
+    "about": "About the Project",
+    "contact": "Contact Us",
+    "collections": "Collections",
+    "portrait": "Portrait",
+    "news": "News & Clippings",
+    "vitalRecords": "News About Vital Records",
+    "births": "News about Births (DOB)",
+    "marriages": "News about Marriages",
+    "deaths": "News about Deaths (DOD)",
+    "surnameIndex": "Surname Index",
+    "support": "Support the Archive"
+  },
+  "search": {
+    "placeholder": "Search by name, place or summary...",
+    "button": "Search"
+  },
+  "record": {
+    "category": "Category",
+    "date": "Date",
+    "source": "Source",
+    "location": "Location",
+    "citation": "Copy APA Citation",
+    "edit": "Edit",
+    "delete": "Delete",
+    "noRecords": "No records found in this section yet."
+  }
+}

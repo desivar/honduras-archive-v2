@@ -123,8 +123,8 @@ const About = () => {
             { icon: '🌳', title: 'FamilySearch Volunteer', sub: 'Since 2009' },
             { icon: '📋', title: 'Certified Record Management', sub: 'RMU Certification' },
             { icon: '🔍', title: 'Family History Research', sub: 'Certified Researcher' },
-            { icon: '📜', title: 'Advanced Research Certificate', sub: 'In progress — Aug 2026' },
-            { icon: '🏛️', title: 'Associate Degree', sub: 'Family History Research — Aug 2026' },
+            { icon: '📜', title: 'Advanced  Family History Research Certificate', sub: 'In progress — Aug 2026' },
+            { icon: '🏛️', title: 'Associate Degree in Family History Research', sub: 'In progress— Aug 2026' },
           ].map((item, i) => (
             <div key={i} style={{
               backgroundColor: '#EFE7DD',

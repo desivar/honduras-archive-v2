@@ -78,23 +78,44 @@ const About = () => {
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         borderLeft: '5px solid #ACA37E'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
-          <img 
-            src={profilePhoto} 
-            alt="Creator portrait"
-            style={{
-              width: '150px',
-              height: '150px',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: '4px solid #737958',
-              flexShrink: 0
-            }}
-          />
-          <h2 style={{ color: '#737958', margin: 0, fontSize: '1.4rem' }}>
-            👤 About the Creator
-          </h2>
-        </div>
+      {/* Header Area */}
+  <div style={{ 
+    display: 'flex', 
+    alignItems: 'flex-start', // Align title to the top of the photo
+    gap: '25px', 
+    marginBottom: '20px' 
+  }}>
+    <img 
+      src={profilePhoto} 
+      alt="Creator portrait"
+      style={{
+        width: '140px',
+        height: '140px',
+        borderRadius: '50%',
+        objectFit: 'cover',
+        border: '4px solid #737958',
+        flexShrink: 0,
+        boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+      }}
+    />
+    <div>
+      <h2 style={{ 
+        color: '#737958', 
+        margin: '10px 0 10px 0', 
+        fontSize: '1.6rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px'
+      }}>
+        <span style={{ fontSize: '1.2rem' }}>👤</span> About the Creator
+      </h2>
+      <p style={{ 
+        color: '#444', 
+        lineHeight: 1.6, 
+        fontSize: '1.05rem', 
+        margin: 0,
+        maxWidth: '600px' // Keeps the bio from stretching too wide
+      }}></p>
 
         <p style={{ color: '#444', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '20px' }}>
           I am a Software Engineer and passionate genealogical researcher with deep roots in Honduran history. 
@@ -108,8 +129,8 @@ const About = () => {
             { icon: '🌳', title: 'FamilySearch Volunteer', sub: 'Since 2009' },
             { icon: '📋', title: 'Certified Record Management', sub: 'RMU Certification' },
             { icon: '🔍', title: 'Family History Research', sub: 'Certified Researcher' },
-            { icon: '📜', title: 'Advanced Research Certificate', sub: 'In progress — completing August 2025' },
-            { icon: '🏛️', title: 'Associate Degree', sub: 'Family History Research' },
+            { icon: '📜', title: 'Advanced Family History Research Certificate', sub: 'In progress — completing August 2026' },
+            { icon: '🏛️', title: 'Associate Degree in Family  History Research ', sub: 'In progress -completing in August 2026' },
           ].map((item, i) => (
             <div key={i} style={{
               backgroundColor: '#EFE7DD',

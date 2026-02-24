@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageToggle from './LanguageToggle';
 
-
 const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -54,8 +53,13 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
         marginBottom: '10px',
         fontSize: '1.3rem'
       }}>
-        Newspaper Archive
+        {t('sidebar.title')}
       </h2>
+
+      {/* 👇 Language Toggle right under the title */}
+      <div style={{ marginBottom: '15px' }}>
+        <LanguageToggle />
+      </div>
 
       {/* 📊 Magnitud + Last Update */}
       <div style={{ 
@@ -66,16 +70,16 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
         borderLeft: '4px solid #ACA37E'
       }}>
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#EFE7DD' }}>
-          <strong>Magnitud:</strong> {totalCount || 0} Registros
+          <strong>{t('sidebar.magnitude')}:</strong> {totalCount || 0} {t('sidebar.records')}
         </p>
-        {/* 👇 Add this */}
         {lastUpdate && (
           <p style={{ margin: 0, fontSize: '0.85rem', color: '#EFE7DD', marginTop: '5px' }}>
-            <strong>Last Update:</strong> {new Date(lastUpdate).toLocaleDateString()}
+            <strong>{t('sidebar.lastUpdate')}:</strong> {new Date(lastUpdate).toLocaleDateString()}
           </p>
         )}
       </div>
-       {/* User Info / Login */}
+
+      {/* User Info / Login */}
       {user ? (
         <div style={{
           backgroundColor: 'rgba(255,255,255,0.1)',
@@ -84,73 +88,65 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
           marginBottom: '20px'
         }}>
           <p style={{ margin: 0, fontSize: '0.85rem', marginBottom: '5px', color: '#ACA37E' }}>
-            Logged in as:
+            {t('sidebar.loggedAs')}:
           </p>
           <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '10px' }}>
             {user.username}
           </p>
-          <button
-            onClick={handleLogout}
-            style={{
-              width: '100%',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: '#EFE7DD',
-              border: '1px solid #ACA37E',
-              padding: '6px',
-              borderRadius: '4px',
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }}
-          >
-            🚪 Logout
+          <button onClick={handleLogout} style={{
+            width: '100%',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            color: '#EFE7DD',
+            border: '1px solid #ACA37E',
+            padding: '6px',
+            borderRadius: '4px',
+            fontSize: '0.85rem',
+            cursor: 'pointer'
+          }}>
+            🚪 {t('sidebar.logout')}
           </button>
         </div>
       ) : (
         <div style={{ marginBottom: '20px' }}>
-          <Link 
-            to="/login"
-            style={{
-              display: 'block',
-              backgroundColor: 'rgba(255,255,255,0.15)',
-              color: '#EFE7DD',
-              textAlign: 'center',
-              padding: '10px',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontSize: '0.9rem',
-              fontWeight: 'bold',
-              marginBottom: '8px'
-            }}
-          >
-            🔐 Admin Login
+          <Link to="/login" style={{
+            display: 'block',
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            color: '#EFE7DD',
+            textAlign: 'center',
+            padding: '10px',
+            borderRadius: '6px',
+            textDecoration: 'none',
+            fontSize: '0.9rem',
+            fontWeight: 'bold',
+            marginBottom: '8px'
+          }}>
+            🔐 {t('sidebar.login')}
           </Link>
         </div>
       )}
-      
+
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <Link to="/" style={linkStyle}>🏠 Home / Search</Link>
-        
+        <Link to="/" style={linkStyle}>🏠 {t('sidebar.home')}</Link>
         {user && user.role === 'admin' && (
-          <Link to="/upload" style={{...linkStyle, fontWeight: 'bold'}}>📤 Upload New File</Link>
+          <Link to="/upload" style={{...linkStyle, fontWeight: 'bold'}}>📤 {t('sidebar.upload')}</Link>
         )}
-        
-        <Link to="/about" style={linkStyle}>📖 About the Project</Link>
-        <Link to="/contact" style={linkStyle}>✉️ Contact Us</Link>
-        
+        <Link to="/about" style={linkStyle}>📖 {t('sidebar.about')}</Link>
+        <Link to="/contact" style={linkStyle}>✉️ {t('sidebar.contact')}</Link>
+
         <hr style={{ borderColor: 'rgba(172, 163, 126, 0.5)', width: '100%', margin: '15px 0' }} />
-        
-        <h3 style={headerStyle}>COLLECTIONS</h3>
-        <Link to="/category/Portrait" style={linkStyle}>👤 Portrait</Link>
-        <Link to="/category/News" style={linkStyle}>📰 News & Clippings</Link>
-        
-        <h3 style={headerStyle}>NEWS ABOUT VITAL RECORDS</h3>
-        <Link to="/category/Birth" style={linkStyle}>🍼 News about Births (DOB)</Link>
-        <Link to="/category/Marriage" style={linkStyle}>💍 News about Marriages</Link>
-        <Link to="/category/Death" style={linkStyle}>⚰️ News about Deaths (DOD)</Link>
+
+        <h3 style={headerStyle}>{t('sidebar.collections')}</h3>
+        <Link to="/category/Portrait" style={linkStyle}>👤 {t('sidebar.portrait')}</Link>
+        <Link to="/category/News" style={linkStyle}>📰 {t('sidebar.news')}</Link>
+
+        <h3 style={headerStyle}>{t('sidebar.vitalRecords')}</h3>
+        <Link to="/category/Birth" style={linkStyle}>🍼 {t('sidebar.births')}</Link>
+        <Link to="/category/Marriage" style={linkStyle}>💍 {t('sidebar.marriages')}</Link>
+        <Link to="/category/Death" style={linkStyle}>⚰️ {t('sidebar.deaths')}</Link>
       </nav>
 
       <div style={{ marginTop: '30px' }}>
-        <h3 style={headerStyle}>SURNAME INDEX</h3>
+        <h3 style={headerStyle}>{t('sidebar.surnameIndex')}</h3>
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(5, 1fr)', 
@@ -158,21 +154,16 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
           marginTop: '12px'
         }}>
           {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l => (
-            <Link 
-              key={l} 
-              // ✅ Fix
-              to={'/alpha/' + l}
-              style={{ 
-                color: '#EFE7DD', 
-                textDecoration: 'none', 
-                fontSize: '0.85rem',
-                textAlign: 'center',
-                padding: '5px',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                transition: 'all 0.2s'
-              }}
-            >
+            <Link key={l} to={'/alpha/' + l} style={{ 
+              color: '#EFE7DD', 
+              textDecoration: 'none', 
+              fontSize: '0.85rem',
+              textAlign: 'center',
+              padding: '5px',
+              borderRadius: '4px',
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              transition: 'all 0.2s'
+            }}>
               {l}
             </Link>
           ))}
@@ -180,23 +171,18 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
       </div>
 
       <div style={{ marginTop: 'auto', paddingTop: '15px', paddingBottom: '20px' }}>
-        <a
-          href="https://paypal.me/yourusername"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'block',
-            backgroundColor: '#0070ba',
-            color: 'white',
-            textAlign: 'center',
-            padding: '10px',
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-            fontWeight: 'bold'
-          }}
-        >
-          ❤️ Support the Archive
+        <a href="https://paypal.me/yourusername" target="_blank" rel="noopener noreferrer" style={{
+          display: 'block',
+          backgroundColor: '#0070ba',
+          color: 'white',
+          textAlign: 'center',
+          padding: '10px',
+          borderRadius: '6px',
+          textDecoration: 'none',
+          fontSize: '0.9rem',
+          fontWeight: 'bold'
+        }}>
+          ❤️ {t('sidebar.support')}
         </a>
       </div>
     </div>
@@ -204,5 +190,3 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
 };
 
 export default Sidebar;
-
-      

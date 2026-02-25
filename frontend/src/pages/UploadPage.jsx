@@ -70,7 +70,7 @@ const UploadPage = () => {
         <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
           <option value="Portrait">Portrait</option>
           <option value="News">News & Clippings</option>
-          <option value="Birth">Birth</option>
+          <option value="Birth">Birth </option>
           <option value="Marriage">Marriage</option>
           <option value="Death">Death</option>
         </select>

@@ -137,12 +137,13 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
 
         <h3 style={headerStyle}>{t('sidebar.collections')}</h3>
         <Link to="/category/Portrait" style={linkStyle}>👤 {t('sidebar.portrait')}</Link>
-        <Link to="/category/News" style={linkStyle}>📰 {t('sidebar.news')}</Link>
+        <Link to="/category/News & Clippings" style={linkStyle}>📰 {t('sidebar.news')}</Link>
 
         <h3 style={headerStyle}>{t('sidebar.vitalRecords')}</h3>
-        <Link to="/category/Birth" style={linkStyle}>🍼 {t('sidebar.births')}</Link>
-        <Link to="/category/Marriage" style={linkStyle}>💍 {t('sidebar.marriages')}</Link>
-        <Link to="/category/Death" style={linkStyle}>⚰️ {t('sidebar.deaths')}</Link>
+
+<Link to="/category/News about Births (DOB)" style={linkStyle}>🍼 {t('sidebar.births')}</Link>
+<Link to="/category/News about Marriages" style={linkStyle}>💍 {t('sidebar.marriages')}</Link>
+<Link to="/category/News about Deaths (DOD)" style={linkStyle}>⚰️ {t('sidebar.deaths')}</Link>
       </nav>
 
       <div style={{ marginTop: '30px' }}>

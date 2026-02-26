@@ -56,12 +56,12 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
         {t('sidebar.title')}
       </h2>
 
-      {/* 👇 Language Toggle right under the title */}
+      {/* Language Toggle */}
       <div style={{ marginBottom: '15px' }}>
         <LanguageToggle />
       </div>
 
-      {/* 📊 Magnitud + Last Update */}
+      {/* Magnitude + Last Update */}
       <div style={{ 
         backgroundColor: 'rgba(255,255,255,0.1)', 
         padding: '10px', 
@@ -138,6 +138,18 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
         <h3 style={headerStyle}>{t('sidebar.collections')}</h3>
         <Link to="/category/Portrait" style={linkStyle}>👤 {t('sidebar.portrait')}</Link>
         <Link to="/category/News" style={linkStyle}>📰 {t('sidebar.news')}</Link>
+
+        {/* 🟢 NEW: Historic Events */}
+        <Link to="/historic-events" style={{
+          ...linkStyle,
+          backgroundColor: 'rgba(255,255,255,0.08)',
+          borderRadius: '6px',
+          padding: '8px 10px',
+          marginTop: '4px',
+          borderLeft: '3px solid #ACA37E'
+        }}>
+          🏛️ Historic Events
+        </Link>
 
         <h3 style={headerStyle}>{t('sidebar.vitalRecords')}</h3>
         <Link to="/category/Birth" style={linkStyle}>🍼 {t('sidebar.births')}</Link>

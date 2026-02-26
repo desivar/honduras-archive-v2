@@ -44,13 +44,13 @@ const connectDB = async () => {
 };
 connectDB();
 
-// Archive Schema
+// ── Archive Schema ────────────────────────────────────────────────────────────
 const archiveSchema = new mongoose.Schema({
   title: String,
   names: [String],
   summary: String,
   fullText: String,
-  category: String,
+  category: String,         // now includes 'Historic Event'
   location: String,
   eventDate: String,
   newspaperName: String,
@@ -58,6 +58,9 @@ const archiveSchema = new mongoose.Schema({
   pageNumber: String,
   imageUrl: String,
   cloudinaryId: String,
+  // 🟢 Historic Event fields
+  eventName: String,
+  peopleInvolved: [String],
   createdAt: { type: Date, default: Date.now }
 });
 const Archive = mongoose.model('Archive', archiveSchema);
@@ -69,7 +72,7 @@ app.get('/', (req, res) => {
   res.send('Honduras Archive API');
 });
 
-// ── GET all records (with search / letter / category) ────────────────────────
+// ── GET all records ───────────────────────────────────────────────────────────
 app.get('/api/archive', async (req, res) => {
   try {
     const { search, letter, category } = req.query;
@@ -80,13 +83,15 @@ app.get('/api/archive', async (req, res) => {
         $or: [
           { names: { $regex: search, $options: 'i' } },
           { countryOfOrigin: { $regex: search, $options: 'i' } },
-          { summary: { $regex: search, $options: 'i' } }
+          { summary: { $regex: search, $options: 'i' } },
+          { eventName: { $regex: search, $options: 'i' } },
+          { peopleInvolved: { $regex: search, $options: 'i' } },
         ]
       };
     } else if (letter && letter !== 'null') {
       query = { names: { $elemMatch: { $regex: '^' + letter, $options: 'i' } } };
     } else if (category) {
-      query = { category: category };
+      query = { category };
     }
 
     const items = await Archive.find(query).sort({ createdAt: -1 });
@@ -100,7 +105,6 @@ app.get('/api/archive', async (req, res) => {
 });
 
 // ── GET single record by ID ───────────────────────────────────────────────────
-// 🟢 THIS WAS MISSING — this is what caused "error loading record" in EditPage
 app.get('/api/archive/:id', async (req, res) => {
   try {
     const item = await Archive.findById(req.params.id);
@@ -115,11 +119,21 @@ app.get('/api/archive/:id', async (req, res) => {
 app.post('/api/archive', upload.single('image'), async (req, res) => {
   try {
     let namesArray = req.body.names;
-    if (typeof namesArray === 'string') namesArray = JSON.parse(namesArray);
+    if (typeof namesArray === 'string') {
+      try { namesArray = JSON.parse(namesArray); }
+      catch { namesArray = namesArray.split(',').map(n => n.trim()); }
+    }
+
+    let peopleArray = req.body.peopleInvolved;
+    if (typeof peopleArray === 'string') {
+      try { peopleArray = JSON.parse(peopleArray); }
+      catch { peopleArray = peopleArray ? peopleArray.split(',').map(n => n.trim()) : []; }
+    }
 
     const item = new Archive({
       ...req.body,
-      names: namesArray,
+      names: namesArray || [],
+      peopleInvolved: peopleArray || [],
       imageUrl: req.file ? req.file.path : null,
       cloudinaryId: req.file ? req.file.filename : null
     });
@@ -136,15 +150,31 @@ app.put('/api/archive/:id', async (req, res) => {
   try {
     const {
       title, names, fullText, category,
-      location, eventDate, newspaperName, pageNumber, summary, countryOfOrigin
+      location, eventDate, newspaperName, pageNumber,
+      summary, countryOfOrigin,
+      eventName, peopleInvolved
     } = req.body;
 
     let namesArray = names;
-    if (typeof namesArray === 'string') namesArray = JSON.parse(namesArray);
+    if (typeof namesArray === 'string') {
+      try { namesArray = JSON.parse(namesArray); }
+      catch { namesArray = namesArray.split(',').map(n => n.trim()); }
+    }
+
+    let peopleArray = peopleInvolved;
+    if (typeof peopleArray === 'string') {
+      try { peopleArray = JSON.parse(peopleArray); }
+      catch { peopleArray = peopleArray ? peopleArray.split(',').map(n => n.trim()) : []; }
+    }
 
     const updatedItem = await Archive.findByIdAndUpdate(
       req.params.id,
-      { title, names: namesArray, fullText, category, location, eventDate, newspaperName, pageNumber, summary, countryOfOrigin },
+      {
+        title, names: namesArray, fullText, category,
+        location, eventDate, newspaperName, pageNumber,
+        summary, countryOfOrigin,
+        eventName, peopleInvolved: peopleArray
+      },
       { new: true }
     );
 

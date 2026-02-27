@@ -26,7 +26,8 @@ const EventCard = ({ record, onDeleteSuccess }) => {
   const copyCitation = () => {
     const source = record.newspaperName || 'Archivo Nacional';
     const page = record.pageNumber || 's/n';
-    const citation = `${record.eventName} (${record.eventDate || 'n.d.'}). Historic Event. ${record.location || 'Honduras'}: ${source}, p. ${page}.`;
+    const dateForCitation = record.publicationDate || record.eventDate || 'n.d.';
+    const citation = `${record.eventName} (${dateForCitation}). Historic Event. ${record.location || 'Honduras'}: ${source}, p. ${page}.`;
     navigator.clipboard.writeText(citation);
     alert('APA Citation copied to clipboard!');
   };
@@ -61,12 +62,7 @@ const EventCard = ({ record, onDeleteSuccess }) => {
           src={record.imageUrl}
           alt={record.eventName}
           loading="lazy"
-          style={{
-            width: '100%',
-            maxHeight: '220px',
-            objectFit: 'cover',
-            display: 'block'
-          }}
+          style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', display: 'block' }}
         />
       )}
 
@@ -75,6 +71,9 @@ const EventCard = ({ record, onDeleteSuccess }) => {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
           {record.eventDate && (
             <span style={badgeStyle}>📅 {record.eventDate}</span>
+          )}
+          {record.publicationDate && (
+            <span style={badgeStyle}>📰 {record.publicationDate}</span>
           )}
           {record.location && (
             <span style={badgeStyle}>📍 {record.location}</span>
@@ -94,12 +93,9 @@ const EventCard = ({ record, onDeleteSuccess }) => {
 
         {record.summary && (
           <p style={{
-            marginTop: '10px',
-            fontStyle: 'italic',
-            borderTop: '1px solid #eee',
-            paddingTop: '10px',
-            lineHeight: '1.5',
-            color: '#555'
+            marginTop: '10px', fontStyle: 'italic',
+            borderTop: '1px solid #eee', paddingTop: '10px',
+            lineHeight: '1.5', color: '#555'
           }}>
             {record.summary.substring(0, 140)}{record.summary.length > 140 ? '…' : ''}
           </p>
@@ -113,21 +109,11 @@ const EventCard = ({ record, onDeleteSuccess }) => {
 
       {/* Actions */}
       <div style={{ padding: '12px 16px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button onClick={copyCitation} style={citeBtnStyle}>
-          📄 Copy APA Citation
-        </button>
-
+        <button onClick={copyCitation} style={citeBtnStyle}>📄 Copy APA Citation</button>
         {isAdmin && (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => window.location.href = `/edit/${record._id}`}
-              style={editBtnStyle}
-            >
-              ✏️ Edit
-            </button>
-            <button onClick={handleDelete} style={deleteBtnStyle}>
-              🗑️ Delete
-            </button>
+            <button onClick={() => window.location.href = `/edit/${record._id}`} style={editBtnStyle}>✏️ Edit</button>
+            <button onClick={handleDelete} style={deleteBtnStyle}>🗑️ Delete</button>
           </div>
         )}
       </div>
@@ -135,54 +121,26 @@ const EventCard = ({ record, onDeleteSuccess }) => {
   );
 };
 
-// ── Badge styles ──────────────────────────────────────────────────────────────
 const badgeStyle = {
-  backgroundColor: '#f0ede3',
-  border: '1px solid #ACA37E',
-  borderRadius: '20px',
-  padding: '3px 10px',
-  fontSize: '0.82rem',
-  color: '#555'
+  backgroundColor: '#f0ede3', border: '1px solid #ACA37E',
+  borderRadius: '20px', padding: '3px 10px', fontSize: '0.82rem', color: '#555'
 };
-
 const personBadgeStyle = {
-  backgroundColor: '#737958',
-  color: 'white',
-  borderRadius: '20px',
-  padding: '2px 10px',
-  fontSize: '0.8rem'
+  backgroundColor: '#737958', color: 'white',
+  borderRadius: '20px', padding: '2px 10px', fontSize: '0.8rem'
 };
-
 const citeBtnStyle = {
-  width: '100%',
-  padding: '10px',
-  backgroundColor: '#737958',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontWeight: 'bold',
-  fontSize: '0.9rem'
+  width: '100%', padding: '10px', backgroundColor: '#737958',
+  color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer',
+  fontWeight: 'bold', fontSize: '0.9rem'
 };
-
 const editBtnStyle = {
-  flex: 1,
-  padding: '9px',
-  backgroundColor: '#586379',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer'
+  flex: 1, padding: '9px', backgroundColor: '#586379',
+  color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'
 };
-
 const deleteBtnStyle = {
-  flex: 1,
-  padding: '9px',
-  backgroundColor: '#a94442',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer'
+  flex: 1, padding: '9px', backgroundColor: '#a94442',
+  color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'
 };
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
@@ -191,19 +149,18 @@ const HistoricEventsPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
-
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 9;
 
   const fetchEvents = async (searchTerm = '') => {
     setLoading(true);
     try {
-      const params = searchTerm
-        ? `search=${encodeURIComponent(searchTerm)}&category=Historic Event`
-        : `category=Historic Event`;
+      // 🟢 Use URLSearchParams so spaces are properly encoded as %20
+      const params = new URLSearchParams({ category: 'Historic Event' });
+      if (searchTerm) params.append('search', searchTerm);
+
       const res = await axios.get(
-        `https://honduras-archive.onrender.com/api/archive?${params}`
+        `https://honduras-archive.onrender.com/api/archive?${params.toString()}`
       );
       setEvents(res.data.items || []);
       setCurrentPage(1);
@@ -214,9 +171,7 @@ const HistoricEventsPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
+  useEffect(() => { fetchEvents(); }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -230,29 +185,22 @@ const HistoricEventsPage = () => {
     fetchEvents('');
   };
 
-  // Paginate
   const totalPages = Math.ceil(events.length / PAGE_SIZE);
   const paginated = events.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div style={{ padding: '40px', backgroundColor: '#EFE7DD', minHeight: '100vh' }}>
 
-      {/* Back link */}
       <div style={{ marginBottom: '20px' }}>
         <Link to="/" style={{ color: '#737958', textDecoration: 'none', fontSize: '0.9rem' }}>
           ← Back to Search
         </Link>
       </div>
 
-      {/* Header */}
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{
-          fontFamily: 'serif',
-          color: '#737958',
-          fontSize: '2rem',
-          margin: '0 0 4px 0',
-          borderBottom: '2px solid #ACA37E',
-          paddingBottom: '10px'
+          fontFamily: 'serif', color: '#737958', fontSize: '2rem',
+          margin: '0 0 4px 0', borderBottom: '2px solid #ACA37E', paddingBottom: '10px'
         }}>
           🏛️ Historic Events
         </h1>
@@ -261,45 +209,27 @@ const HistoricEventsPage = () => {
         </p>
       </div>
 
-      {/* Search bar */}
+      {/* Search */}
       <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', marginBottom: '30px', maxWidth: '520px' }}>
         <input
-          type="text"
-          value={searchInput}
+          type="text" value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by event name, person, place..."
           style={{
-            flex: 1,
-            padding: '11px 14px',
-            borderRadius: '6px',
-            border: '2px solid #ACA37E',
-            fontSize: '0.95rem',
-            backgroundColor: 'white',
-            outline: 'none'
+            flex: 1, padding: '11px 14px', borderRadius: '6px',
+            border: '2px solid #ACA37E', fontSize: '0.95rem',
+            backgroundColor: 'white', outline: 'none'
           }}
         />
         <button type="submit" style={{
-          padding: '11px 20px',
-          backgroundColor: '#737958',
-          color: 'white',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontWeight: 'bold'
-        }}>
-          Search
-        </button>
+          padding: '11px 20px', backgroundColor: '#737958', color: 'white',
+          border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
+        }}>Search</button>
         {search && (
           <button type="button" onClick={handleClear} style={{
-            padding: '11px 16px',
-            backgroundColor: 'white',
-            color: '#737958',
-            border: '2px solid #737958',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}>
-            Clear
-          </button>
+            padding: '11px 16px', backgroundColor: 'white', color: '#737958',
+            border: '2px solid #737958', borderRadius: '6px', cursor: 'pointer'
+          }}>Clear</button>
         )}
       </form>
 
@@ -323,32 +253,24 @@ const HistoricEventsPage = () => {
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '36px' }}>
               <button
                 onClick={() => { setCurrentPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 disabled={currentPage === 1}
                 style={currentPage === 1 ? pageBtnDisabled : pageBtnInactive}
-              >
-                ← Prev
-              </button>
+              >← Prev</button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
+                <button key={page}
                   onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   style={page === currentPage ? pageBtnActive : pageBtnInactive}
-                >
-                  {page}
-                </button>
+                >{page}</button>
               ))}
               <button
                 onClick={() => { setCurrentPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 disabled={currentPage === totalPages}
                 style={currentPage === totalPages ? pageBtnDisabled : pageBtnInactive}
-              >
-                Next →
-              </button>
+              >Next →</button>
             </div>
           )}
         </>
@@ -358,9 +280,8 @@ const HistoricEventsPage = () => {
 };
 
 const pageBtnBase = {
-  padding: '8px 14px', borderRadius: '4px',
-  border: '2px solid #737958', fontWeight: 'bold',
-  fontSize: '0.9rem', cursor: 'pointer', minWidth: '40px'
+  padding: '8px 14px', borderRadius: '4px', border: '2px solid #737958',
+  fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', minWidth: '40px'
 };
 const pageBtnActive = { ...pageBtnBase, backgroundColor: '#737958', color: 'white' };
 const pageBtnInactive = { ...pageBtnBase, backgroundColor: 'white', color: '#737958' };

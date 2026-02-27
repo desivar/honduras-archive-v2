@@ -118,12 +118,14 @@ const UploadPage = () => {
             </div>
             <div>
               <label style={labelStyle}>People Involved (separate with commas):</label>
-              <input
-                type="text" value={peopleInvolved}
+              <textarea
+                value={peopleInvolved}
                 onChange={(e) => setPeopleInvolved(e.target.value)}
-                placeholder="e.g. Francisco Morazán, José Cecilio del Valle"
-                style={inputStyle}
+                placeholder="e.g. Francisco Morazán, José Cecilio del Valle, Manuel Zelaya..."
+                rows="3"
+                style={{ ...inputStyle, resize: 'vertical' }}
               />
+              <p style={hintStyle}>Separate each name with a comma</p>
             </div>
           </div>
         )}

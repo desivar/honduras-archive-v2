@@ -1,17 +1,32 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
+  email:    { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  // 🟢 Added whatsapp field here!
-  whatsapp: { type: String }, 
-  role: { 
-    type: String, 
-    enum: ['admin', 'client', 'visitor'], // 🟢 Added 'visitor' to match your authRoutes
-    default: 'visitor' 
-  },
+  whatsapp: { type: String },
+
+  // 🟢 Roles: admin | genealogist | visitor
+  role: { type: String, default: 'visitor' },
+
+  // 🟢 Approval status for genealogist registrations
+  status: { type: String, default: 'approved' }, // 'pending' | 'approved' | 'rejected'
+
+  // 🟢 Genealogist activity tracking
+  bookmarks:     [{ type: mongoose.Schema.Types.ObjectId, ref: 'Archive' }],
+  searchHistory: [{ query: String, searchedAt: { type: Date, default: Date.now } }],
+  notes: [{
+    recordId: { type: mongoose.Schema.Types.ObjectId, ref: 'Archive' },
+    text: String,
+    updatedAt: { type: Date, default: Date.now }
+  }],
+  sessions: [{
+    loginAt:  Date,
+    logoutAt: Date,
+    duration: Number  // in minutes
+  }],
+
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', userSchema);

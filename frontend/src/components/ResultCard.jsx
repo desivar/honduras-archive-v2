@@ -228,7 +228,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 };
 
 // ─── ResultList ───────────────────────────────────────────────────────────────
-export const ResultList = ({ records = [], pageSize = 21, onDeleteSuccess }) => {
+export const ResultList = ({ records = [], pageSize = 20, onDeleteSuccess }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(records.length / pageSize);
   const paginated = records.slice((currentPage - 1) * pageSize, currentPage * pageSize);

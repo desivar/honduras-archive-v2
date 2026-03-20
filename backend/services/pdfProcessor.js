@@ -29,33 +29,25 @@ const LOCATIONS = [
  */
 const renderPageToImage = async (pdfDoc, pageNum) => {
   const page = await pdfDoc.getPage(pageNum);
-  const scale = 2.0; // Higher = better OCR quality
+  const scale = 2.0;
   const viewport = page.getViewport({ scale });
-
   const canvas = createCanvas(viewport.width, viewport.height);
   const context = canvas.getContext('2d');
-
-  await page.render({
-    canvasContext: context,
-    viewport,
-  }).promise;
-
+  await page.render({ canvasContext: context, viewport }).promise;
   return canvas.toBuffer('image/png');
 };
 
 /**
  * processHistoricalPDF
- * Strategy:
- * 1. Try pdf-parse for text layer (fast, works if PDF has text)
- * 2. If scanned/image PDF, render each page to image via pdfjs-dist
- *    then run Tesseract OCR on each page image
+ * 1. Try pdf-parse for text layer (fast)
+ * 2. If scanned, render pages to images via pdfjs-dist + run Tesseract OCR
  */
 const processHistoricalPDF = async (pdfBuffer) => {
   try {
     let extractedText = '';
 
-    // ATTEMPT 1: Text layer via pdf-parse (fast)
-    console.log('📜 Step 1: Trying pdf-parse text extraction...');
+    // ATTEMPT 1: Text layer via pdf-parse
+    console.log('📜 Step 1: Trying pdf-parse...');
     try {
       const pdfData = await pdfParse(pdfBuffer);
       extractedText = pdfData.text || '';
@@ -64,25 +56,23 @@ const processHistoricalPDF = async (pdfBuffer) => {
       console.warn('⚠️ pdf-parse failed:', parseErr.message);
     }
 
-    // ATTEMPT 2: pdfjs-dist + Tesseract for scanned image PDFs
+    // ATTEMPT 2: pdfjs-dist + canvas + Tesseract
     if (!extractedText || extractedText.trim().length < 50) {
-      console.log('🔍 Step 2: Scanned PDF detected. Converting pages to images...');
-
+      console.log('🔍 Step 2: No text layer. Running OCR pipeline...');
       try {
+        console.log('📦 Loading PDF with pdfjs-dist...');
         const uint8Array = new Uint8Array(pdfBuffer);
         const pdfDoc = await pdfjsLib.getDocument({ data: uint8Array }).promise;
-        
-        // Process first 3 pages max (enough for category detection, saves time)
-        const pagesToProcess = Math.min(pdfDoc.numPages, 3);
-        console.log(`📄 Processing ${pagesToProcess} of ${pdfDoc.numPages} pages...`);
+        console.log(`📄 PDF loaded! Total pages: ${pdfDoc.numPages}`);
 
+        const pagesToProcess = Math.min(pdfDoc.numPages, 3);
         const allText = [];
 
         for (let i = 1; i <= pagesToProcess; i++) {
-          console.log(`🖼️ Rendering page ${i}...`);
+          console.log(`🖼️ Rendering page ${i} to image...`);
           const imageBuffer = await renderPageToImage(pdfDoc, i);
+          console.log(`🔤 Running Tesseract OCR on page ${i}...`);
 
-          console.log(`🔤 Running OCR on page ${i}...`);
           const { data: { text } } = await Tesseract.recognize(imageBuffer, 'spa', {
             logger: m => {
               if (m.status === 'recognizing text') {
@@ -91,9 +81,8 @@ const processHistoricalPDF = async (pdfBuffer) => {
             }
           });
 
-          if (text && text.trim().length > 0) {
-            allText.push(text);
-          }
+          if (text && text.trim().length > 0) allText.push(text);
+          console.log(`✅ Page ${i} done: ${text.length} characters`);
         }
 
         extractedText = allText.join('\n\n');
@@ -101,6 +90,7 @@ const processHistoricalPDF = async (pdfBuffer) => {
 
       } catch (ocrErr) {
         console.error('❌ OCR pipeline failed:', ocrErr.message);
+        console.error(ocrErr.stack);
         extractedText = '';
       }
     }
@@ -151,15 +141,5 @@ const processHistoricalPDF = async (pdfBuffer) => {
     return { success: false, error: error.message };
   }
 };
-if (!extractedText || extractedText.trim().length < 50) {
-  console.log('🔍 Step 2: Scanned PDF detected...');
-  try {
-    console.log('📦 Loading pdfjs-dist...');
-    const uint8Array = new Uint8Array(pdfBuffer);
-    console.log(`📦 Buffer size: ${pdfBuffer.length} bytes`);
-    const pdfDoc = await pdfjsLib.getDocument({ data: uint8Array }).promise;
-    console.log(`📄 PDF loaded! Pages: ${pdfDoc.numPages}`);
-    console.log('🖼️ Loading canvas...');
-    const { createCanvas } = require('canvas');
-    console.log('✅ Canvas loaded!');
+
 module.exports = { processHistoricalPDF };

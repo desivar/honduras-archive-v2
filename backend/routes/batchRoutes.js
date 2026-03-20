@@ -7,6 +7,7 @@ const { processHistoricalPDF } = require('../services/pdfProcessor');
 // This is faster and safer for your laptop
 const storage = multer.memoryStorage();
 const upload = multer({ 
+    storage: storage,
   limits: { fileSize: 20 * 1024 * 1024 }, // Limit to 20MB for large 1800s archives
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {

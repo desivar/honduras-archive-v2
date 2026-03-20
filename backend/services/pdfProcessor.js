@@ -1,79 +1,86 @@
-const Tesseract = require('tesseract.js');
 const pdfParse = require('pdf-parse');
+const Anthropic = require('@anthropic-ai/sdk');
 
-// ── Extraction Rules (Spanish keywords per category) ─────────────────────────
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ── Extraction Rules ──────────────────────────────────────────────────────────
 const EXTRACTION_RULES = {
-  deaths:    ['falleció', 'defunción', 'entierro', 'pésame', 'funeraria', 'obituario', 'muerte'],
-  marriages: ['matrimonio', 'boda', 'nupcias', 'contraerán', 'enlace', 'casamiento'],
-  births:    ['nacimiento', 'dio a luz', 'recién nacido', 'prole', 'nació', 'bautismo'],
-  businesses:['sociedad', 'comercio', 'traspaso', 'clausura', 'inauguración', 'almacén', 'empresa'],
-  historicEvents: ['decreto', 'revolución', 'elecciones', 'tratado', 'batalla', 'guerra', 'terremoto', ' primer', 'asume', 'nombrado',
-    'apertura', 'cargo','nueva'
-  ],
+  deaths:        ['falleció', 'defunción', 'entierro', 'pésame', 'funeraria', 'obituario', 'muerte'],
+  marriages:     ['matrimonio', 'boda', 'nupcias', 'contraerán', 'enlace', 'casamiento'],
+  births:        ['nacimiento', 'dio a luz', 'recién nacido', 'prole', 'nació', 'bautismo'],
+  businesses:    ['sociedad', 'comercio', 'traspaso', 'clausura', 'inauguración', 'almacén', 'empresa'],
+  historicEvents:['decreto', 'revolución', 'elecciones', 'tratado', 'batalla', 'guerra'],
 };
 
-// ── Location Detection — Honduras Departments & Major Cities ─────────────────
 const LOCATIONS = [
-  // Major Cities
   'Tegucigalpa', 'San Pedro Sula', 'La Ceiba', 'Comayagua',
   'Choluteca', 'Juticalpa', 'Santa Rosa de Copán', 'Trujillo',
   'Danlí', 'Siguatepeque', 'Tela', 'El Progreso', 'Tocoa',
   'Olanchito', 'Yoro', 'Nacaome', 'Puerto Cortés', 'Roatán',
-'Catacamas',
-  // Departments
-  'Atlántida', 'Colón', 'Comayagua', 'Copán', 'Cortés',
-  'Choluteca', 'El Paraíso', 'Francisco Morazán', 'Gracias a Dios',
-  'Intibucá', 'Islas de la Bahía', 'La Paz', 'Lempira',
-  'Ocotepeque', 'Olancho', 'Santa Bárbara', 'Valle', 'Yoro',
- 
-  // Historic / Colonial names common in 1800s-1930s documents
-  'Tegucigalpa D.C.', 'Distrito Central', 'Comayagüela',
-  'Santa Bárbara', 'Gracias', 'Sensenti', 'Amapala',
-  'San Marcos de Colón', 'Esquías', 'Cedros', 'Ojojona',
+  'Atlántida', 'Colón', 'Copán', 'Cortés', 'El Paraíso',
+  'Francisco Morazán', 'Gracias a Dios', 'Intibucá',
+  'Islas de la Bahía', 'La Paz', 'Lempira', 'Ocotepeque',
+  'Olancho', 'Santa Bárbara', 'Valle', 'Comayagüela',
+  'Distrito Central', 'Gracias', 'Amapala', 'Ojojona',
 ];
 
 /**
  * processHistoricalPDF
  * Strategy:
- * 1. Try pdf-parse first (fast, works if PDF has a text layer)
- * 2. If no text found (scanned image PDF), use Tesseract directly on the buffer
- *    with a workaround for older scanned documents
+ * 1. Try pdf-parse for text layer (fast)
+ * 2. If no text, send PDF to Claude API as base64 for OCR
  */
 const processHistoricalPDF = async (pdfBuffer) => {
   try {
-    console.log('📜 Step 1: Trying text extraction with pdf-parse...');
-    
     let extractedText = '';
 
-    // ATTEMPT 1: Try to get text layer directly (fast)
+    // ATTEMPT 1: Text layer via pdf-parse
+    console.log('📜 Step 1: Trying pdf-parse text extraction...');
     try {
       const pdfData = await pdfParse(pdfBuffer);
       extractedText = pdfData.text || '';
       console.log(`📄 pdf-parse found ${extractedText.length} characters`);
     } catch (parseErr) {
-      console.warn('⚠️ pdf-parse failed, will try OCR:', parseErr.message);
+      console.warn('⚠️ pdf-parse failed:', parseErr.message);
     }
 
-    // ATTEMPT 2: If no text layer found, use Tesseract OCR
+    // ATTEMPT 2: Claude API for scanned/image PDFs
     if (!extractedText || extractedText.trim().length < 50) {
-      console.log('🔍 Step 2: No text layer found. Running Tesseract OCR...');
-      
+      console.log('🤖 Step 2: Sending to Claude API for OCR...');
       try {
-        // Tesseract can sometimes handle PDF buffers depending on the version
-        // We pass it as a buffer with spa (Spanish) language
-        const { data: { text } } = await Tesseract.recognize(pdfBuffer, 'spa', {
-          logger: m => {
-            if (m.status === 'recognizing text') {
-              console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
-            }
-          }
+        const base64PDF = pdfBuffer.toString('base64');
+
+        const response = await client.messages.create({
+          model: 'claude-opus-4-5',
+          max_tokens: 2000,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'document',
+                  source: {
+                    type: 'base64',
+                    media_type: 'application/pdf',
+                    data: base64PDF,
+                  },
+                },
+                {
+                  type: 'text',
+                  text: `This is a historical Honduran newspaper or magazine from the 1800s-1930s. 
+Please extract and transcribe ALL readable text from this document. 
+Focus on: names of people, dates, locations, and type of announcement (birth, death, marriage, business, news).
+Return only the extracted text, no commentary.`,
+                },
+              ],
+            },
+          ],
         });
-        extractedText = text || '';
-        console.log(`✅ Tesseract extracted ${extractedText.length} characters`);
-      } catch (ocrErr) {
-        console.error('❌ Tesseract OCR failed:', ocrErr.message);
-        // If both fail, return partial result with empty text
-        // so the user can still fill the form manually
+
+        extractedText = response.content[0].text || '';
+        console.log(`✅ Claude extracted ${extractedText.length} characters`);
+      } catch (claudeErr) {
+        console.error('❌ Claude API failed:', claudeErr.message);
         extractedText = '';
       }
     }

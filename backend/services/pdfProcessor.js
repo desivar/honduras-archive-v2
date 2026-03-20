@@ -7,7 +7,9 @@ const EXTRACTION_RULES = {
   marriages: ['matrimonio', 'boda', 'nupcias', 'contraerán', 'enlace', 'casamiento'],
   births:    ['nacimiento', 'dio a luz', 'recién nacido', 'prole', 'nació', 'bautismo'],
   businesses:['sociedad', 'comercio', 'traspaso', 'clausura', 'inauguración', 'almacén', 'empresa'],
-  historicEvents: ['decreto', 'revolución', 'elecciones', 'tratado', 'batalla', 'guerra'],
+  historicEvents: ['decreto', 'revolución', 'elecciones', 'tratado', 'batalla', 'guerra', 'terremoto', ' primer', 'asume', 'nombrado',
+    'apertura', 'cargo','nueva'
+  ],
 };
 
 // ── Location Detection — Honduras Departments & Major Cities ─────────────────

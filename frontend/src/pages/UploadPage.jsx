@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom'; // Add this to your imports
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const UploadPage = () => {
   const navigate = useNavigate();

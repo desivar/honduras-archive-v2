@@ -1,3 +1,16 @@
+import { Link } from 'react-router-dom'; // Add this to your imports
+
+// Inside your return() function, before the form starts:
+<div style={switchContainerStyle}>
+  <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
+    Have a full PDF magazine or newspaper?
+  </p>
+  <Link to="/batch-upload" style={batchLinkStyle}>
+    🚀 Switch to AI Batch Mode
+  </Link>
+</div>
+
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';

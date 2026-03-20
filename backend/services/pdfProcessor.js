@@ -1,6 +1,21 @@
 const Tesseract = require('tesseract.js');
 const pdfParse = require('pdf-parse');
 
+// ── Extraction Rules (Spanish keywords per category) ─────────────────────────
+const EXTRACTION_RULES = {
+  deaths:    ['falleció', 'defunción', 'entierro', 'pésame', 'funeraria', 'obituario', 'muerte'],
+  marriages: ['matrimonio', 'boda', 'nupcias', 'contraerán', 'enlace', 'casamiento'],
+  births:    ['nacimiento', 'dio a luz', 'recién nacido', 'prole', 'nació', 'bautismo'],
+  businesses:['sociedad', 'comercio', 'traspaso', 'clausura', 'inauguración', 'almacén', 'empresa'],
+  historicEvents: ['decreto', 'revolución', 'elecciones', 'tratado', 'batalla', 'guerra'],
+};
+
+// ── Location Detection ────────────────────────────────────────────────────────
+const LOCATIONS = [
+  'Tegucigalpa', 'San Pedro Sula', 'Comayagua', 'La Ceiba',
+  'Choluteca', 'Juticalpa', 'Santa Rosa de Copán', 'Trujillo'
+];
+
 /**
  * processHistoricalPDF
  * Strategy:
@@ -47,34 +62,32 @@ const processHistoricalPDF = async (pdfBuffer) => {
       }
     }
 
-    // Build the auto-suggested fields from whatever text we got
+    // ── Category Detection ────────────────────────────────────────────────────
     const lowerText = extractedText.toLowerCase();
-    
     let suggestedCategory = 'News';
-    if (lowerText.includes('falleció') || lowerText.includes('defunción') || lowerText.includes('muerte')) {
+
+    if (EXTRACTION_RULES.deaths.some(k => lowerText.includes(k))) {
       suggestedCategory = 'Death';
-    } else if (lowerText.includes('nació') || lowerText.includes('bautismo') || lowerText.includes('nacimiento')) {
+    } else if (EXTRACTION_RULES.births.some(k => lowerText.includes(k))) {
       suggestedCategory = 'Birth';
-    } else if (lowerText.includes('almacén') || lowerText.includes('comercio') || lowerText.includes('empresa')) {
+    } else if (EXTRACTION_RULES.businesses.some(k => lowerText.includes(k))) {
       suggestedCategory = 'Business';
-    } else if (lowerText.includes('matrimonio') || lowerText.includes('casamiento') || lowerText.includes('boda')) {
+    } else if (EXTRACTION_RULES.marriages.some(k => lowerText.includes(k))) {
       suggestedCategory = 'Marriage';
-    } else if (lowerText.includes('batalla') || lowerText.includes('revolución') || lowerText.includes('guerra')) {
+    } else if (EXTRACTION_RULES.historicEvents.some(k => lowerText.includes(k))) {
       suggestedCategory = 'Historic Event';
     }
 
-    // Try to detect location
-    let detectedLocation = '';
-    if (lowerText.includes('tegucigalpa')) detectedLocation = 'Tegucigalpa';
-    else if (lowerText.includes('san pedro sula')) detectedLocation = 'San Pedro Sula';
-    else if (lowerText.includes('comayagua')) detectedLocation = 'Comayagua';
-    else if (lowerText.includes('la ceiba')) detectedLocation = 'La Ceiba';
+    // ── Location Detection ────────────────────────────────────────────────────
+    const detectedLocation = LOCATIONS.find(loc =>
+      lowerText.includes(loc.toLowerCase())
+    ) || '';
 
     const cleanSummary = extractedText.length > 0
       ? extractedText.slice(0, 800).replace(/\n+/g, ' ').trim() + '...'
       : 'No text could be extracted. Please fill in the summary manually.';
 
-    console.log(`✅ Processing complete. Category: ${suggestedCategory}, Location: ${detectedLocation}`);
+    console.log(`✅ Done. Category: ${suggestedCategory} | Location: ${detectedLocation}`);
 
     return {
       success: true,

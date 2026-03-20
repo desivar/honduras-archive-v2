@@ -3,12 +3,22 @@ const router = express.Router();
 const multer = require('multer');
 const { processHistoricalPDF } = require('../services/pdfProcessor');
 
-// Configure Multer to handle the PDF upload in memory (RAM)
-// This is faster and safer for your laptop
+// ✅ Explicit CORS for this route (safety net for Render)
+router.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL || 'https://honduras-archive-1.onrender.com');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, x-auth-token');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// Configure Multer to handle the PDF upload in memory
 const storage = multer.memoryStorage();
-const upload = multer({ 
-    storage: storage,
-  limits: { fileSize: 20 * 1024 * 1024 }, // Limit to 20MB for large 1800s archives
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB limit
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
       cb(null, true);
@@ -29,14 +39,15 @@ router.post('/scan', upload.single('pdf'), async (req, res) => {
     }
 
     console.log('--- 📜 Starting Internal AI Scan ---');
-    
-    // Call your new service
+    console.log(`File size: ${(req.file.size / 1024 / 1024).toFixed(2)} MB`);
+
     const result = await processHistoricalPDF(req.file.buffer);
 
     if (result.success) {
       console.log('--- ✅ Scan Complete! ---');
       res.json(result.data);
     } else {
+      console.error('--- ❌ Scan Failed:', result.error);
       res.status(500).json({ message: 'AI Processing failed', error: result.error });
     }
 

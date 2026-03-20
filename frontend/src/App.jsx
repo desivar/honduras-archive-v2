@@ -4,6 +4,7 @@ import axios from 'axios';
 import Sidebar from './components/SideBar';
 import SearchPage from './pages/SearchPage';
 import UploadPage from './pages/UploadPage';
+import BatchReviewPage from './pages/BatchReviewPage';         // ✅ NEW
 import CollectionView from './pages/CollectionView';
 import RecordDetail from './pages/RecordDetail';
 import Login from './pages/LoginPage';
@@ -13,8 +14,8 @@ import AdminPanel from './pages/AdminPanel';
 import EditPage from './pages/EditPage';
 import About from './pages/About';
 import HistoricEventsPage from './pages/HistoricEventsPage';
-import BusinessesPage from './pages/BusinessesPage';           // 🟢
-import GenealogistDashboard from './pages/GenealogistDashboard'; // 🟢
+import BusinessesPage from './pages/BusinessesPage';
+import GenealogistDashboard from './pages/GenealogistDashboard';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -87,6 +88,7 @@ function App() {
 
             {/* Admin */}
             <Route path="/upload" element={isAdmin ? <UploadPage /> : <Navigate to="/login" replace />} />
+            <Route path="/batch-upload" element={isAdmin ? <BatchReviewPage /> : <Navigate to="/login" replace />} />  {/* ✅ NEW */}
             <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/login" replace />} />
             <Route path="/edit/:id" element={isAdmin ? <EditPage /> : <Navigate to="/login" replace />} />
 
@@ -97,7 +99,7 @@ function App() {
             <Route path="/category/:value" element={<CollectionView type="category" />} />
             <Route path="/alpha/:value" element={<CollectionView type="letter" />} />
             <Route path="/historic-events" element={<HistoricEventsPage />} />
-            <Route path="/businesses" element={<BusinessesPage />} />  {/* 🟢 */}
+            <Route path="/businesses" element={<BusinessesPage />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

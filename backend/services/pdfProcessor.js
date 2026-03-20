@@ -1,7 +1,7 @@
+const Tesseract = require('tesseract.js');
 const pdfParse = require('pdf-parse');
-const Anthropic = require('@anthropic-ai/sdk');
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const { createCanvas } = require('canvas');
+const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
 
 // ── Extraction Rules ──────────────────────────────────────────────────────────
 const EXTRACTION_RULES = {
@@ -25,16 +25,36 @@ const LOCATIONS = [
 ];
 
 /**
+ * Renders a single PDF page to a PNG buffer using pdfjs-dist + canvas
+ */
+const renderPageToImage = async (pdfDoc, pageNum) => {
+  const page = await pdfDoc.getPage(pageNum);
+  const scale = 2.0; // Higher = better OCR quality
+  const viewport = page.getViewport({ scale });
+
+  const canvas = createCanvas(viewport.width, viewport.height);
+  const context = canvas.getContext('2d');
+
+  await page.render({
+    canvasContext: context,
+    viewport,
+  }).promise;
+
+  return canvas.toBuffer('image/png');
+};
+
+/**
  * processHistoricalPDF
  * Strategy:
- * 1. Try pdf-parse for text layer (fast)
- * 2. If no text, send PDF to Claude API as base64 for OCR
+ * 1. Try pdf-parse for text layer (fast, works if PDF has text)
+ * 2. If scanned/image PDF, render each page to image via pdfjs-dist
+ *    then run Tesseract OCR on each page image
  */
 const processHistoricalPDF = async (pdfBuffer) => {
   try {
     let extractedText = '';
 
-    // ATTEMPT 1: Text layer via pdf-parse
+    // ATTEMPT 1: Text layer via pdf-parse (fast)
     console.log('📜 Step 1: Trying pdf-parse text extraction...');
     try {
       const pdfData = await pdfParse(pdfBuffer);
@@ -44,43 +64,43 @@ const processHistoricalPDF = async (pdfBuffer) => {
       console.warn('⚠️ pdf-parse failed:', parseErr.message);
     }
 
-    // ATTEMPT 2: Claude API for scanned/image PDFs
+    // ATTEMPT 2: pdfjs-dist + Tesseract for scanned image PDFs
     if (!extractedText || extractedText.trim().length < 50) {
-      console.log('🤖 Step 2: Sending to Claude API for OCR...');
+      console.log('🔍 Step 2: Scanned PDF detected. Converting pages to images...');
+
       try {
-        const base64PDF = pdfBuffer.toString('base64');
+        const uint8Array = new Uint8Array(pdfBuffer);
+        const pdfDoc = await pdfjsLib.getDocument({ data: uint8Array }).promise;
+        
+        // Process first 3 pages max (enough for category detection, saves time)
+        const pagesToProcess = Math.min(pdfDoc.numPages, 3);
+        console.log(`📄 Processing ${pagesToProcess} of ${pdfDoc.numPages} pages...`);
 
-        const response = await client.messages.create({
-          model: 'claude-opus-4-5',
-          max_tokens: 2000,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'document',
-                  source: {
-                    type: 'base64',
-                    media_type: 'application/pdf',
-                    data: base64PDF,
-                  },
-                },
-                {
-                  type: 'text',
-                  text: `This is a historical Honduran newspaper or magazine from the 1800s-1930s. 
-Please extract and transcribe ALL readable text from this document. 
-Focus on: names of people, dates, locations, and type of announcement (birth, death, marriage, business, news).
-Return only the extracted text, no commentary.`,
-                },
-              ],
-            },
-          ],
-        });
+        const allText = [];
 
-        extractedText = response.content[0].text || '';
-        console.log(`✅ Claude extracted ${extractedText.length} characters`);
-      } catch (claudeErr) {
-        console.error('❌ Claude API failed:', claudeErr.message);
+        for (let i = 1; i <= pagesToProcess; i++) {
+          console.log(`🖼️ Rendering page ${i}...`);
+          const imageBuffer = await renderPageToImage(pdfDoc, i);
+
+          console.log(`🔤 Running OCR on page ${i}...`);
+          const { data: { text } } = await Tesseract.recognize(imageBuffer, 'spa', {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                console.log(`Page ${i} OCR: ${Math.round(m.progress * 100)}%`);
+              }
+            }
+          });
+
+          if (text && text.trim().length > 0) {
+            allText.push(text);
+          }
+        }
+
+        extractedText = allText.join('\n\n');
+        console.log(`✅ Total extracted: ${extractedText.length} characters`);
+
+      } catch (ocrErr) {
+        console.error('❌ OCR pipeline failed:', ocrErr.message);
         extractedText = '';
       }
     }

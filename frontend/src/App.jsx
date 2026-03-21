@@ -87,7 +87,7 @@ function App() {
 
             {/* Admin */}
             <Route path="/upload" element={isAdmin ? <UploadPage /> : <Navigate to="/login" replace />} />
-            <Route path="/batch-upload" element={isAdmin ? <BatchReviewPage /> : <Navigate to="/login" replace />} />  {/* ✅ NEW */}
+            {/* NOTE: /batch-upload route removed — import BatchReviewPage and add it back when the page is ready */}
             <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/login" replace />} />
             <Route path="/edit/:id" element={isAdmin ? <EditPage /> : <Navigate to="/login" replace />} />
 

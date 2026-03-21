@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// ── Curated rotating quotes from Honduran / Central American historical figures
+// ── Curated rotating quotes from Honduran / Central American 
 const HISTORICAL_QUOTES = [
-  { quote: "La unión hace la fuerza, y la fuerza hace la libertad.", author: "Francisco Morazán", year: "1830" },
+  { quote: "No puedes cambiar lo que otros te hacen a ti, pero puedes ensenar a tus hijos a vivir la ley de oro que incluye el perdon, el respeto y el amor.", author: "Desire Vargas", year: "2026" },
   { quote: "La patria no es un pedazo de tierra; es una abstracción, un espíritu, una idea.", author: "Ramón Rosa", year: "1876" },
-  { quote: "No hay mayor gloria que morir por la libertad.", author: "Francisco Morazán", year: "1842" },
+  { quote: "Las sociedades viven, crecen y se perfeccionan bajo la influencia de las ideas.", author:"Ramón Rosa", year:"1876"},
   { quote: "El pueblo que no conoce su historia está condenado a repetirla.", author: "José Cecilio del Valle", year: "1821" },
   { quote: "La educación es el arma más poderosa para cambiar el mundo.", author: "José Trinidad Reyes", year: "1845" },
-  { quote: "Nuestra América debe ser gobernada por sus propios hijos.", author: "José Cecilio del Valle", year: "1822" },
+  { quote: "Haz de tu hogar un centro de instruccion, un centro de paz, un refugio de perdon, un refugio de amor.", author: "Desire Vargas", year: "2026" },
 ];
 
 // ── Helper: get today's date string as "DD de MonthName"

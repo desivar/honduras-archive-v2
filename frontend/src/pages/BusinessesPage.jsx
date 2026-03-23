@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const BusinessCard = ({ record, onDeleteSuccess }) => {
+  const navigate = useNavigate();
   const storedUser = localStorage.getItem('user');
   const user = storedUser ? JSON.parse(storedUser) : null;
   const isAdmin = user && user.role === 'admin';
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation(); // prevent card click
     if (window.confirm(`Are you sure you want to delete "${record.businessName}"?`)) {
       try {
         const token = localStorage.getItem('token');
@@ -22,7 +24,13 @@ const BusinessCard = ({ record, onDeleteSuccess }) => {
     }
   };
 
-  const copyCitation = () => {
+  const handleEdit = (e) => {
+    e.stopPropagation(); // prevent card click
+    window.location.href = `/edit/${record._id}`;
+  };
+
+  const copyCitation = (e) => {
+    e.stopPropagation(); // prevent card click
     const source = record.newspaperName || 'Archivo Nacional';
     const page = record.pageNumber || 's/n';
     const date = record.publicationDate || record.eventDate || record.yearFounded || 'n.d.';
@@ -32,11 +40,17 @@ const BusinessCard = ({ record, onDeleteSuccess }) => {
   };
 
   return (
-    <div style={{
-      backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '2px solid #ACA37E',
-      display: 'flex', flexDirection: 'column'
-    }}>
+    <div
+      onClick={() => navigate(`/record/${record._id}`)}
+      style={{
+        backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '2px solid #ACA37E',
+        display: 'flex', flexDirection: 'column',
+        cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)'; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}
+    >
       {/* Header */}
       <div style={{ backgroundColor: '#586379', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{ fontSize: '1.2rem' }}>🏢</span>
@@ -50,9 +64,16 @@ const BusinessCard = ({ record, onDeleteSuccess }) => {
         </div>
       </div>
 
+      {/* ✅ Fixed image: objectFit contain so full ad is visible */}
       {record.imageUrl && (
-        <img src={record.imageUrl} alt={record.businessName} loading="lazy"
-          style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} />
+        <div style={{ backgroundColor: '#f5f5f5', borderBottom: '1px solid #eee' }}>
+          <img
+            src={record.imageUrl}
+            alt={record.businessName}
+            loading="lazy"
+            style={{ width: '100%', maxHeight: '240px', objectFit: 'contain', display: 'block' }}
+          />
+        </div>
       )}
 
       <div style={{ padding: '16px', flex: 1, fontSize: '0.9rem', color: '#333' }}>
@@ -86,7 +107,7 @@ const BusinessCard = ({ record, onDeleteSuccess }) => {
         <button onClick={copyCitation} style={citeBtnStyle}>📄 Copy APA Citation</button>
         {isAdmin && (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => window.location.href = `/edit/${record._id}`} style={editBtnStyle}>✏️ Edit</button>
+            <button onClick={handleEdit} style={editBtnStyle}>✏️ Edit</button>
             <button onClick={handleDelete} style={deleteBtnStyle}>🗑️ Delete</button>
           </div>
         )}

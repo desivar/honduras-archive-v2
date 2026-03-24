@@ -1,117 +1,96 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // 🟢 Now used in handleDelete below
+import axios from 'axios';
 
 const ArchiveCard = ({ record, category, onDeleteSuccess }) => {
   const navigate = useNavigate();
-  
-  // Get token and user for Admin checks
   const token = localStorage.getItem('token');
   const isAdmin = JSON.parse(localStorage.getItem('user'))?.role === 'admin';
 
-  // Define accent color
-  const accentColor = (category === 'Business') ? '#586379' : '#737958';
+  // 1. Determine the color based on category
+  const accentColor = (category === 'Business' || record.category === 'Business') ? '#586379' : '#737958';
 
+  // 2. The Logic for Icons and Titles (Unified)
   const getInfo = () => {
-    switch (category) {
-      case 'Business': return { title: record.businessName || 'Unnamed Business', icon: '🏢', sub: record.businessType };
-      case 'Historic Event': return { title: record.eventName || 'Unnamed Event', icon: '🏛️', sub: record.location };
-      case 'Portrait': return { title: record.fullName || 'Portrait', icon: '🖼️', sub: record.eventDate };
-      case 'Person': return { title: record.fullName || 'Person', icon: '👤', sub: record.occupation };
-      case 'News': return { title: record.headline || 'News Clipping', icon: '📰', sub: record.newspaperName };
-      default: return { title: record.title || 'Record', icon: '📄', sub: '' };
+    const currentCat = category || record.category;
+    switch (currentCat) {
+      case 'Business': 
+        return { title: record.businessName || 'Unnamed Business', icon: '🏢', sub: record.businessType };
+      case 'Portrait': 
+        return { title: record.fullName || 'Portrait', icon: '🖼️', sub: record.eventDate };
+      case 'Birth': case 'Births':
+        return { title: record.fullName || 'Birth Record', icon: '👶', sub: record.eventDate };
+      case 'News': case 'Newspaper':
+        return { title: record.headline || 'News Clipping', icon: '📰', sub: record.newspaperName };
+      default: 
+        return { title: record.fullName || record.title || 'Archive Record', icon: '📄', sub: record.location || '' };
     }
   };
 
   const { title, icon, sub } = getInfo();
 
-  // ─── 🟢 THIS USES AXIOS AND ONDELETESUCCESS ───
+  // 3. Handle Delete (This uses axios and onDeleteSuccess)
   const handleDelete = async (e) => {
-    e.stopPropagation(); // Prevents the card from opening when clicking delete
+    e.stopPropagation(); // Prevents the card from opening
     if (window.confirm(`Delete "${title}"?`)) {
       try {
         await axios.delete(`https://honduras-archive.onrender.com/api/archive/${record._id}`, {
           headers: { 'x-auth-token': token }
         });
-        alert('Deleted!');
-        if (onDeleteSuccess) onDeleteSuccess(); // 🟢 Now used!
+        if (onDeleteSuccess) onDeleteSuccess();
       } catch (err) {
-        alert('Error deleting record');
+        alert('Error deleting');
       }
     }
   };
 
-  const stop = (e) => e.stopPropagation();
-
   return (
     <div 
       onClick={() => navigate(`/record/${record._id}`)} 
-      style={cardStyle(accentColor)}
+      style={{
+        backgroundColor: 'white',
+        padding: '20px',
+        marginBottom: '20px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+        border: `2px solid ${accentColor}`,
+        cursor: 'pointer'
+      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
         <span style={{ fontSize: '1.5rem' }}>{icon}</span>
         <h3 style={{ color: accentColor, margin: 0 }}>{title}</h3>
       </div>
       
-      {record.imageUrl && <img src={record.imageUrl} style={imageStyle} alt={title} />}
+      {record.imageUrl && (
+        <img 
+          src={record.imageUrl} 
+          alt={title} 
+          style={{ width: '100%', borderRadius: '4px', marginBottom: '10px' }} 
+        />
+      )}
 
-      <div style={{ padding: '10px 0' }}>
-        {sub && <p style={{ fontSize: '0.9rem', color: '#555' }}><strong>{sub}</strong></p>}
+      <p style={{ fontSize: '0.9rem', margin: '5px 0' }}><strong>{sub}</strong></p>
+
+      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+        <button 
+          onClick={(e) => { e.stopPropagation(); alert("Citation Copied!"); }} 
+          style={{ padding: '5px 10px', cursor: 'pointer' }}
+        >
+          📄 Cite
+        </button>
         
-        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+        {isAdmin && (
           <button 
-            onClick={(e) => { stop(e); alert("Citation logic goes here!"); }} 
-            style={buttonStyle}
+            onClick={handleDelete} 
+            style={{ padding: '5px 10px', color: 'red', cursor: 'pointer' }}
           >
-            📄 Cite
+            🗑️ Delete
           </button>
-          
-          {isAdmin && (
-            <button 
-              onClick={handleDelete} // 🟢 Connected to the function above
-              style={{ ...buttonStyle, color: '#a94442', borderColor: '#a94442' }}
-            >
-              🗑️ Delete
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
-};
-
-// --- STYLES (Make sure these are at the bottom) ---
-const cardStyle = (color) => ({
-  backgroundColor: 'white',
-  padding: '20px',
-  marginBottom: '20px',
-  borderRadius: '8px',
-  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-  border: `2px solid ${color}`,
-  cursor: 'pointer',
-  display: 'flex',
-  flexDirection: 'column',
-  transition: 'transform 0.2s'
-});
-
-const imageStyle = {
-  width: '100%',
-  borderRadius: '4px',
-  marginBottom: '15px',
-  display: 'block',
-  height: 'auto',
-  objectFit: 'contain',
-  maxHeight: '400px',
-  backgroundColor: '#f9f9f9'
-};
-
-const buttonStyle = {
-  padding: '8px 12px',
-  backgroundColor: 'white',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontSize: '0.85rem'
 };
 
 export default ArchiveCard;

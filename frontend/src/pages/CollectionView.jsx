@@ -60,7 +60,9 @@ const CollectionView = ({ type }) => {  // 👈 type comes from props, not usePa
         }}>
           {results.length > 0 ? (
             results.map(record => (
-              <ResultCard key={record._id} record={record} />
+              <ResultCard key={record._id} 
+              record={record} />
+              
             ))
           ) : (
             <p style={{ color: '#666' }}>No records found in this section yet.</p>

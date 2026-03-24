@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // 1. Added useNavigate
 
 // ── Event Card ────────────────────────────────────────────────────────────────
 const EventCard = ({ record, onDeleteSuccess }) => {
+  const navigate = useNavigate(); // 2. Initialize navigate
   const storedUser = localStorage.getItem('user');
   const user = storedUser ? JSON.parse(storedUser) : null;
   const isAdmin = user && user.role === 'admin';
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation(); // 3. Prevent card click
     if (window.confirm(`Are you sure you want to delete "${record.eventName}"?`)) {
       try {
         const token = localStorage.getItem('token');
@@ -23,7 +25,13 @@ const EventCard = ({ record, onDeleteSuccess }) => {
     }
   };
 
-  const copyCitation = () => {
+  const handleEdit = (e) => {
+    e.stopPropagation(); // 4. Prevent card click
+    navigate(`/edit/${record._id}`); // Use navigate instead of window.location
+  };
+
+  const copyCitation = (e) => {
+    e.stopPropagation(); // 5. Prevent card click
     const source = record.newspaperName || 'Archivo Nacional';
     const page = record.pageNumber || 's/n';
     const dateForCitation = record.publicationDate || record.eventDate || 'n.d.';
@@ -33,23 +41,19 @@ const EventCard = ({ record, onDeleteSuccess }) => {
   };
 
   return (
-    <div style={{
-      backgroundColor: 'white',
-      borderRadius: '10px',
-      overflow: 'hidden',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      border: '2px solid #ACA37E',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
+    <div 
+      onClick={() => navigate(`/record/${record._id}`)} // 6. Make entire card clickable
+      style={{
+        backgroundColor: 'white', borderRadius: '10px', overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '2px solid #ACA37E',
+        display: 'flex', flexDirection: 'column', cursor: 'pointer', // Added cursor
+        transition: 'transform 0.15s, box-shadow 0.15s' // Smooth hover
+      }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)'; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; }}
+    >
       {/* Header banner */}
-      <div style={{
-        backgroundColor: '#737958',
-        padding: '12px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px'
-      }}>
+      <div style={{ backgroundColor: '#737958', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{ fontSize: '1.2rem' }}>🏛️</span>
         <h3 style={{ margin: 0, color: 'white', fontSize: '1.05rem', fontFamily: 'serif' }}>
           {record.eventName || 'Unnamed Event'}
@@ -58,26 +62,22 @@ const EventCard = ({ record, onDeleteSuccess }) => {
 
       {/* Image */}
       {record.imageUrl && (
-        <img
-          src={record.imageUrl}
-          alt={record.eventName}
-          loading="lazy"
-          style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', display: 'block' }}
-        />
+        <div style={{ backgroundColor: '#f5f5f5', borderBottom: '1px solid #eee' }}>
+          <img
+            src={record.imageUrl}
+            alt={record.eventName}
+            loading="lazy"
+            style={{ width: '100%', maxHeight: '220px', objectFit: 'contain', display: 'block' }} // Changed to contain to see full image
+          />
+        </div>
       )}
 
       {/* Body */}
       <div style={{ padding: '16px', flex: 1, fontSize: '0.9rem', color: '#333' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
-          {record.eventDate && (
-            <span style={badgeStyle}>📅 {record.eventDate}</span>
-          )}
-          {record.publicationDate && (
-            <span style={badgeStyle}>📰 {record.publicationDate}</span>
-          )}
-          {record.location && (
-            <span style={badgeStyle}>📍 {record.location}</span>
-          )}
+          {record.eventDate && <span style={badgeStyle}>📅 {record.eventDate}</span>}
+          {record.publicationDate && <span style={badgeStyle}>📰 {record.publicationDate}</span>}
+          {record.location && <span style={badgeStyle}>📍 {record.location}</span>}
         </div>
 
         {record.peopleInvolved && record.peopleInvolved.length > 0 && (
@@ -93,9 +93,8 @@ const EventCard = ({ record, onDeleteSuccess }) => {
 
         {record.summary && (
           <p style={{
-            marginTop: '10px', fontStyle: 'italic',
-            borderTop: '1px solid #eee', paddingTop: '10px',
-            lineHeight: '1.5', color: '#555'
+            marginTop: '10px', fontStyle: 'italic', borderTop: '1px solid #eee', 
+            paddingTop: '10px', lineHeight: '1.5', color: '#555'
           }}>
             {record.summary.substring(0, 140)}{record.summary.length > 140 ? '…' : ''}
           </p>
@@ -112,7 +111,7 @@ const EventCard = ({ record, onDeleteSuccess }) => {
         <button onClick={copyCitation} style={citeBtnStyle}>📄 Copy APA Citation</button>
         {isAdmin && (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => window.location.href = `/edit/${record._id}`} style={editBtnStyle}>✏️ Edit</button>
+            <button onClick={handleEdit} style={editBtnStyle}>✏️ Edit</button>
             <button onClick={handleDelete} style={deleteBtnStyle}>🗑️ Delete</button>
           </div>
         )}
@@ -121,170 +120,4 @@ const EventCard = ({ record, onDeleteSuccess }) => {
   );
 };
 
-const badgeStyle = {
-  backgroundColor: '#f0ede3', border: '1px solid #ACA37E',
-  borderRadius: '20px', padding: '3px 10px', fontSize: '0.82rem', color: '#555'
-};
-const personBadgeStyle = {
-  backgroundColor: '#737958', color: 'white',
-  borderRadius: '20px', padding: '2px 10px', fontSize: '0.8rem'
-};
-const citeBtnStyle = {
-  width: '100%', padding: '10px', backgroundColor: '#737958',
-  color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer',
-  fontWeight: 'bold', fontSize: '0.9rem'
-};
-const editBtnStyle = {
-  flex: 1, padding: '9px', backgroundColor: '#586379',
-  color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'
-};
-const deleteBtnStyle = {
-  flex: 1, padding: '9px', backgroundColor: '#a94442',
-  color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'
-};
-
-// ── Main Page ─────────────────────────────────────────────────────────────────
-const HistoricEventsPage = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 9;
-
-  const fetchEvents = async (searchTerm = '') => {
-    setLoading(true);
-    try {
-      // 🟢 Use URLSearchParams so spaces are properly encoded as %20
-      const params = new URLSearchParams({ category: 'Historic Event' });
-      if (searchTerm) params.append('search', searchTerm);
-
-      const res = await axios.get(
-        `https://honduras-archive.onrender.com/api/archive?${params.toString()}`
-      );
-      setEvents(res.data.items || []);
-      setCurrentPage(1);
-    } catch (err) {
-      console.error('Error fetching historic events:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchEvents(); }, []);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    fetchEvents(searchInput);
-  };
-
-  const handleClear = () => {
-    setSearchInput('');
-    setSearch('');
-    fetchEvents('');
-  };
-
-  const totalPages = Math.ceil(events.length / PAGE_SIZE);
-  const paginated = events.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  return (
-    <div style={{ padding: '40px', backgroundColor: '#EFE7DD', minHeight: '100vh' }}>
-
-      <div style={{ marginBottom: '20px' }}>
-        <Link to="/" style={{ color: '#737958', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Back to Search
-        </Link>
-      </div>
-
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{
-          fontFamily: 'serif', color: '#737958', fontSize: '2rem',
-          margin: '0 0 4px 0', borderBottom: '2px solid #ACA37E', paddingBottom: '10px'
-        }}>
-          🏛️ Historic Events
-        </h1>
-        <p style={{ color: '#888', margin: '8px 0 0 0', fontSize: '0.95rem' }}>
-          {events.length} event{events.length !== 1 ? 's' : ''} in the archive
-        </p>
-      </div>
-
-      {/* Search */}
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', marginBottom: '30px', maxWidth: '520px' }}>
-        <input
-          type="text" value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Search by event name, person, place..."
-          style={{
-            flex: 1, padding: '11px 14px', borderRadius: '6px',
-            border: '2px solid #ACA37E', fontSize: '0.95rem',
-            backgroundColor: 'white', outline: 'none'
-          }}
-        />
-        <button type="submit" style={{
-          padding: '11px 20px', backgroundColor: '#737958', color: 'white',
-          border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold'
-        }}>Search</button>
-        {search && (
-          <button type="button" onClick={handleClear} style={{
-            padding: '11px 16px', backgroundColor: 'white', color: '#737958',
-            border: '2px solid #737958', borderRadius: '6px', cursor: 'pointer'
-          }}>Clear</button>
-        )}
-      </form>
-
-      {/* Results */}
-      {loading ? (
-        <p style={{ color: '#737958' }}>⏳ Loading events...</p>
-      ) : paginated.length === 0 ? (
-        <div style={{ textAlign: 'center', color: '#888', marginTop: '60px' }}>
-          <p style={{ fontSize: '2rem' }}>🏛️</p>
-          <p>No historic events found{search ? ` for "${search}"` : ''}.</p>
-        </div>
-      ) : (
-        <>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '24px'
-          }}>
-            {paginated.map(record => (
-              <EventCard key={record._id} record={record} onDeleteSuccess={() => fetchEvents(search)} />
-            ))}
-          </div>
-
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '36px' }}>
-              <button
-                onClick={() => { setCurrentPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                disabled={currentPage === 1}
-                style={currentPage === 1 ? pageBtnDisabled : pageBtnInactive}
-              >← Prev</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button key={page}
-                  onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                  style={page === currentPage ? pageBtnActive : pageBtnInactive}
-                >{page}</button>
-              ))}
-              <button
-                onClick={() => { setCurrentPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                disabled={currentPage === totalPages}
-                style={currentPage === totalPages ? pageBtnDisabled : pageBtnInactive}
-              >Next →</button>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-};
-
-const pageBtnBase = {
-  padding: '8px 14px', borderRadius: '4px', border: '2px solid #737958',
-  fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', minWidth: '40px'
-};
-const pageBtnActive = { ...pageBtnBase, backgroundColor: '#737958', color: 'white' };
-const pageBtnInactive = { ...pageBtnBase, backgroundColor: 'white', color: '#737958' };
-const pageBtnDisabled = { ...pageBtnBase, backgroundColor: '#f0f0f0', color: '#aaa', borderColor: '#ccc', cursor: 'not-allowed' };
-
-export default HistoricEventsPage;
+// ... Rest of your code (badgeStyle, HistoricEventsPage, etc.) stays the same ...

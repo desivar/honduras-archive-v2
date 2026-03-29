@@ -132,7 +132,7 @@ export default function TodayInHistory() {
           overflow: 'hidden',
           background: 'linear-gradient(135deg, #3d1f28 0%, #6b3a45 40%, #8c5060 70%, #4a2535 100%)',
           boxShadow: '0 8px 40px rgba(40,20,5,0.35), inset 0 1px 0 rgba(255,220,140,0.15)',
-          border: '1px solid rgba(172,130,60,0.4)',
+          border: '1px solid rgba(180,130,140,0.4)',
         }}>
 
           {/* Grain texture */}

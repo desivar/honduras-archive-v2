@@ -5,13 +5,10 @@ const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
-const axios = require('axios');
-const Anthropic = require('@anthropic-ai/sdk');
 const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'honduras_archive_secret';
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // Middleware
 app.use(express.json());
@@ -76,7 +73,7 @@ const archiveSchema = new mongoose.Schema({
   // Historic Event fields
   eventName: String,
   peopleInvolved: [String],
-  // Business fields
+  // ✅ Business fields
   businessName: String,
   businessType: String,
   owner: String,
@@ -134,77 +131,6 @@ app.get('/api/archive', async (req, res) => {
 
     res.json({ items, totalCount, lastUpdate: lastRecord ? lastRecord.createdAt : null });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ── POST scan image with Claude Vision ───────────────────────────────────────
-// IMPORTANT: this must stay above /api/archive/:id so Express doesn't treat
-// the word "scan" as a MongoDB ObjectId
-app.post('/api/archive/scan', authMiddleware, upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
-
-    // Fetch the image Cloudinary just stored and convert to base64
-    const imageResponse = await axios.get(req.file.path, { responseType: 'arraybuffer' });
-    const base64Image = Buffer.from(imageResponse.data).toString('base64');
-    const mimeType = req.file.mimetype || 'image/jpeg';
-
-    const message = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: mimeType, data: base64Image }
-          },
-          {
-            type: 'text',
-            text: `You are a newspaper archive digitization assistant specializing in Honduras historical records.
-Analyze this newspaper image and extract all visible text and metadata.
-Respond ONLY with a valid JSON object — no markdown, no explanation. Use this exact structure:
-
-{
-  "category": "Portrait or News or Birth or Marriage or Death or Historic Event or Business",
-  "names": ["full person names mentioned — empty array if none"],
-  "countryOfOrigin": "person's country of origin if mentioned, else null",
-  "eventDate": "date the event happened if visible, else null",
-  "publicationDate": "date the newspaper was published if visible, else null",
-  "location": "city or region mentioned, else null",
-  "newspaperName": "name of the newspaper if visible, else null",
-  "pageNumber": "page number if visible, else null",
-  "summary": "2-3 sentence description of the content",
-  "eventName": "name of the historic event if category is Historic Event, else null",
-  "peopleInvolved": ["people involved if Historic Event, else empty array"],
-  "businessName": "business name if category is Business, else null",
-  "businessType": "type of business if category is Business, else null",
-  "owner": "owner name if category is Business, else null",
-  "yearFounded": "year founded if category is Business, else null"
-}`
-          }
-        ]
-      }]
-    });
-
-    // Parse Claude's response — strip markdown fences if present
-    let extracted;
-    const rawText = message.content[0].text.trim();
-    try {
-      extracted = JSON.parse(rawText);
-    } catch {
-      const cleaned = rawText.replace(/```json|```/g, '').trim();
-      extracted = JSON.parse(cleaned);
-    }
-
-    // Also return the Cloudinary URL so the frontend can preview the image
-    extracted.imageUrl = req.file.path;
-    extracted.cloudinaryId = req.file.filename;
-
-    res.json(extracted);
-  } catch (error) {
-    console.error('❌ Scan error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });

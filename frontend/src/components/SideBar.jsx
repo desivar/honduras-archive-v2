@@ -14,7 +14,7 @@ const Sidebar = ({ user, onLogout, totalCount, lastUpdate }) => {
       try {
         const token = localStorage.getItem('token');
         const sessionIndex = localStorage.getItem('sessionIndex');
-        await axios.post('https://honduras-archive.onrender.com/api/auth/logout',
+        await axios.post('https://honduras-archive-v2.onrender.com/api/auth/logout',
           { sessionIndex: parseInt(sessionIndex) },
           { headers: { 'x-auth-token': token } }
         );

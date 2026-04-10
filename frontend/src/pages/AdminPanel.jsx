@@ -23,7 +23,7 @@ const AdminPanel = () => {
 
   const changeRole = async (userId, newRole) => {
     try {
-      await axios.put(`https://honduras-archive.onrender.com/api/auth/users/role/${userId}`, { role: newRole });
+      await axios.put(`https://honduras-archive-v2.onrender.com/api/auth/users/role/${userId}`, { role: newRole });
       alert('Role updated!');
       fetchData();
     } catch {

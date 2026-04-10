@@ -14,7 +14,7 @@ const GenealogistDashboard = ({ onLogout }) => {
     const fetchDashboard = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('https://honduras-archive.onrender.com/api/auth/dashboard', {
+        const res = await axios.get('https://honduras-archive_dev.onrender.com/api/auth/dashboard', {
           headers: { 'x-auth-token': token }
         });
         setData(res.data);

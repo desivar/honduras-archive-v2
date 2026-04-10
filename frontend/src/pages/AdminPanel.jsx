@@ -33,7 +33,7 @@ const AdminPanel = () => {
 
   const approveUser = async (userId, status) => {
     try {
-      await axios.put(`https://honduras-archive.onrender.com/api/auth/users/approve/${userId}`, { status });
+      await axios.put(`https://honduras-archive-v2.onrender.com/api/auth/users/approve/${userId}`, { status });
       alert(`User ${status}!`);
       fetchData();
     } catch {

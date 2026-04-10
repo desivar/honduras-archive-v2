@@ -14,7 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'honduras_archive_secret';
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://hondura',
+  origin: process.env.FRONTEND_URL || 'https://honduras-archive-v2-1.onrender.com',
   credentials: true
 }));
 
@@ -40,7 +40,7 @@ cloudinary.config({
 // Multer config
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: { folder: 'honduras_archive', allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'] }
+  params: { folder: 'honduras_archive_dev', allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'] }
 });
 const upload = multer({ storage });
 

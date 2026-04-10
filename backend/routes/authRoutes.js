@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'honduras_archive_secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'honduras_archive_dev_secret';
 
 // ── Auth middleware ───────────────────────────────────────────────────────────
 const authMiddleware = (req, res, next) => {

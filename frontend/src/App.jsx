@@ -31,7 +31,7 @@ function App() {
 
     const fetchStats = async () => {
       try {
-        const response = await axios.get('https://honduras-archive.onrender.com/api/archive');
+        const response = await axios.get('https://honduras-archive-v2.onrender.com/api/archive');
         setTotalCount(response.data.totalCount || 0);
         setLastUpdate(response.data.lastUpdate || null);
       } catch (err) {

@@ -9,7 +9,7 @@ const Tesseract = require('tesseract.js');
 const authRoutes = require('./routes/authRoutes');
 
 const app = express();
-const JWT_SECRET = process.env.JWT_SECRET || 'honduras_archive_secret';
+const JWT_SECRET = process.env.JWT_SECRET || 'honduras_archive-v2_secret';
 
 // Middleware
 app.use(express.json());

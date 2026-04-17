@@ -34,17 +34,14 @@ const TagInput = ({ tags, setTags, placeholder, inputId }) => {
   );
 };
 
-
 const UploadPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  
-   
 
   // ── Scan / review state ─────────────────────────────────────────────────────
   const [scanning, setScanning] = useState(false);
-  const [scanDone, setScanDone] = useState(false);   // OCR finished, review mode ON
-  const [approved, setApproved] = useState(false);   // human approved, ready to save
+  const [scanDone, setScanDone] = useState(false);
+  const [approved, setApproved] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [scannedImageUrl, setScannedImageUrl] = useState(null);
   const [scannedCloudinaryId, setScannedCloudinaryId] = useState(null);
@@ -76,7 +73,7 @@ const UploadPage = () => {
     setImage(null); setImagePreview(null);
     setScannedImageUrl(null); setScannedCloudinaryId(null);
     setScanDone(false); setApproved(false);
-    setCategory('Portrait'); setEventDate(''); setPublicationDate('');
+    setEventDate(''); setPublicationDate('');
     setLocation(''); setNewspaperName(''); setPageNumber('');
     setSummary(''); setNames([]); setCountryOfOrigin('');
     setEventName(''); setPeopleInvolved([]);
@@ -96,32 +93,52 @@ const UploadPage = () => {
     }
   };
 
-  // ── Scan with Tesseract OCR ─────────────────────────────────────────────────
+  // ── Scan + smart parse ──────────────────────────────────────────────────────
   const handleScan = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Session expired. Please log in again.');
+      navigate('/login');
+      return;
+    }
     if (!image) return;
+
     setScanning(true);
     setScanDone(false);
     setApproved(false);
 
     try {
-      const token = localStorage.getItem('token');
-       console.log('TOKEN BEING SENT:', token); // ← add just this line
       const data = new FormData();
       data.append('image', image);
+      data.append('category', category); // send category so parser focuses correctly
 
       const res = await axios.post(
-         'https://honduras-archive-v2.onrender.com/api/archive/analyze',
+        'https://honduras-archive-v2.onrender.com/api/archive/analyze',
         data,
-         // ✅ Replace with this
         { headers: { 'x-auth-token': token } }
       );
 
       const d = res.data;
 
-      // Fill summary with extracted text — admin corrects everything else
-      if (d.summary) setSummary(d.summary);
+      // Auto-fill whatever the parser found
+      if (d.summary)                setSummary(d.summary);
+      if (d.eventDate)              setEventDate(d.eventDate);
+      if (d.publicationDate)        setPublicationDate(d.publicationDate);
+      if (d.location)               setLocation(d.location);
+      if (d.newspaperName)          setNewspaperName(d.newspaperName);
+      if (d.pageNumber)             setPageNumber(d.pageNumber);
+      if (d.countryOfOrigin)        setCountryOfOrigin(d.countryOfOrigin);
+      if (d.names?.length)          setNames(d.names);
+      if (d.eventName)              setEventName(d.eventName);
+      if (d.peopleInvolved?.length) setPeopleInvolved(d.peopleInvolved);
+      if (d.businessName)           setBusinessName(d.businessName);
+      if (d.businessType)           setBusinessType(d.businessType);
+      if (d.owner)                  setOwner(d.owner);
+      if (d.yearFounded)            setYearFounded(d.yearFounded);
 
-      // Save the Cloudinary info so we don't re-upload on save
+      // Auto-update category if parser detected a different one
+      if (d.category && d.category !== 'News') setCategory(d.category);
+
       if (d.imageUrl)      setScannedImageUrl(d.imageUrl);
       if (d.cloudinaryId)  setScannedCloudinaryId(d.cloudinaryId);
 
@@ -134,64 +151,7 @@ const UploadPage = () => {
     }
   };
 
-  // ── AI Auto-fill ────────────────────────────────────────────────────────────
-  const handleAnalyze = async () => {
-    // 1. Token Check
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert("Session expired. Please log in again.");
-      navigate('/login');
-      return;
-    }
-
-    if (!image) return;
-    setScanning(true);
-    setScanDone(false);
-    setApproved(false);
-
-    try {
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(image);
-      });
-
-      const res = await axios.post(
-        'https://honduras-archive-v2.onrender.com/api/archive/analyze',
-        { image: base64, category },
-        { headers: { 'x-auth-token': token } } // Use the 'token' variable
-      );
-      
-      const d = res.data;
-
-      // Your existing form logic (these are all correctly inside the try block)
-      if (d.summary)           { setSummary(d.summary); }
-      if (d.eventDate)         { setEventDate(d.eventDate); }
-      if (d.publicationDate)   { setPublicationDate(d.publicationDate); }
-      if (d.location)          { setLocation(d.location); }
-      if (d.newspaperName)     { setNewspaperName(d.newspaperName); }
-      if (d.pageNumber)        { setPageNumber(d.pageNumber); }
-      if (d.names?.length)     { setNames(d.names); }
-      if (d.countryOfOrigin)   { setCountryOfOrigin(d.countryOfOrigin); }
-      if (d.eventName)         { setEventName(d.eventName); }
-      if (d.peopleInvolved?.length) { setPeopleInvolved(d.peopleInvolved); }
-      if (d.businessName)      { setBusinessName(d.businessName); }
-      if (d.businessType)      { setBusinessType(d.businessType); }
-      if (d.owner)             { setOwner(d.owner); }
-      if (d.yearFounded)       { setYearFounded(d.yearFounded); }
-      if (d.imageUrl)          { setScannedImageUrl(d.imageUrl); }
-      if (d.cloudinaryId)      { setScannedCloudinaryId(d.cloudinaryId); }
-
-      setScanDone(true); 
-    } catch (err) {
-      console.error('AI Analyze error:', err);
-      alert('Analysis failed: ' + (err.response?.data?.error || err.message));
-    } finally {
-      setScanning(false);
-    }
-  }; 
-  // ── Submit — only works after human approves ────────────────────────────────
+  // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!approved) {
@@ -226,7 +186,6 @@ const UploadPage = () => {
       formData.append('peopleInvolved', JSON.stringify([]));
     }
 
-    // If image was already uploaded during scan, send its URL instead of re-uploading
     if (scannedImageUrl) {
       formData.append('imageUrl', scannedImageUrl);
       formData.append('cloudinaryId', scannedCloudinaryId);
@@ -237,9 +196,10 @@ const UploadPage = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post('https://honduras-archive-v2.onrender.com/api/archive', formData, {
-        headers: { 'Content-Type': 'multipart/form-data', 'x-auth-token': token }
+        headers: { 'x-auth-token': token }
       });
       alert('✅ Record saved to archive successfully!');
+      handleReset();
       navigate('/');
     } catch (err) {
       console.error(err);
@@ -257,9 +217,30 @@ const UploadPage = () => {
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {/* ── STEP 1: Image upload ──────────────────────────────────────────── */}
+        {/* ── STEP 1: Choose category FIRST ────────────────────────────────── */}
         <div style={{ backgroundColor: '#f7f5ef', border: '2px solid #ACA37E', borderRadius: '8px', padding: '16px' }}>
-          <p style={stepTitleStyle}>📷 Step 1 — Upload the newspaper image</p>
+          <p style={stepTitleStyle}>📂 Step 1 — Choose the record category</p>
+          <p style={{ fontSize: '0.85rem', color: '#777', margin: '0 0 10px' }}>
+            Select the category first so the scan knows what information to extract.
+          </p>
+          <select
+            value={category}
+            onChange={e => { setCategory(e.target.value); setApproved(false); setScanDone(false); }}
+            style={{ ...inputStyle, fontSize: '1rem', fontWeight: 'bold', color: '#737958' }}
+          >
+            <option value="Portrait">👤 Portrait</option>
+            <option value="News">📰 News &amp; Clippings</option>
+            <option value="Birth">🍼 Birth</option>
+            <option value="Marriage">💍 Marriage</option>
+            <option value="Death">🕊️ Death</option>
+            <option value="Historic Event">🏛️ Historic Event</option>
+            <option value="Business">🏢 Business</option>
+          </select>
+        </div>
+
+        {/* ── STEP 2: Upload image + Scan ───────────────────────────────────── */}
+        <div style={{ backgroundColor: '#f7f5ef', border: '2px solid #ACA37E', borderRadius: '8px', padding: '16px' }}>
+          <p style={stepTitleStyle}>📷 Step 2 — Upload the newspaper image and scan</p>
 
           {imagePreview && (
             <div style={{ marginBottom: '12px', textAlign: 'center' }}>
@@ -269,31 +250,24 @@ const UploadPage = () => {
 
           <input type="file" onChange={handleImageChange} accept="image/*" style={inputStyle} />
 
-          {/* Scan button */}
           {image && !scanDone && (
             <div style={{ marginTop: '12px' }}>
               <button
                 type="button"
                 onClick={handleScan}
                 disabled={scanning}
-                style={{ ...btnStyle, backgroundColor: scanning ? '#aaa' : '#4a7c59' }}
+                style={{ ...btnStyle, backgroundColor: scanning ? '#aaa' : '#4a7c59', width: '100%' }}
               >
-                {scanning ? '🔍 Scanning image... please wait' : '🔍 Scan image — extract text'}
+                {scanning ? '🔍 Scanning... please wait (20–60 sec)' : `🔍 Scan image as "${category}"`}
               </button>
-              {scanning && (
-                <p style={{ marginTop: '8px', fontSize: '0.85rem', color: '#888' }}>
-                  This may take 20–60 seconds depending on image size...
-                </p>
-              )}
             </div>
           )}
 
-          {/* Scan done banner */}
           {scanDone && (
-            <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#fff8e1', border: '2px solid #f4c430', borderRadius: '6px' }}>
-              <strong style={{ color: '#737958' }}>✓ Text extracted!</strong>
+            <div style={{ marginTop: '12px', padding: '12px', backgroundColor: '#e8f5e9', border: '2px solid #4caf50', borderRadius: '6px' }}>
+              <strong style={{ color: '#2e7d32' }}>✓ Scan complete!</strong>
               <p style={{ margin: '6px 0 0', fontSize: '0.88rem', color: '#555' }}>
-                The extracted text is in the Summary field below. <strong>Please review every field, fix any errors, then click "Approve Record" at the bottom.</strong> Nothing is saved until you approve.
+                Fields filled automatically where possible. <strong>Please review everything below, correct any errors, then approve.</strong>
               </p>
               <button type="button" onClick={handleReset} style={{ marginTop: '8px', background: 'none', border: '1px solid #999', borderRadius: '4px', padding: '4px 12px', cursor: 'pointer', fontSize: '0.82rem', color: '#666' }}>
                 ✖ Start over with a different image
@@ -302,25 +276,11 @@ const UploadPage = () => {
           )}
         </div>
 
-        {/* ── STEP 2: Review & fill fields (shown after scan OR can fill manually) ── */}
+        {/* ── STEP 3: Review & fill fields ──────────────────────────────────── */}
         <div style={{ backgroundColor: scanDone ? '#fffef5' : 'white', border: scanDone ? '2px solid #f4c430' : '2px solid #e0e0e0', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <p style={stepTitleStyle}>
-            {scanDone ? '✏️ Step 2 — Review extracted text and fill in all fields' : '✏️ Fill in the record details'}
+            ✏️ Step 3 — Review and complete all fields
           </p>
-
-          {/* Category */}
-          <div>
-            <label style={labelStyle}>Category: *</label>
-            <select value={category} onChange={e => { setCategory(e.target.value); setApproved(false); }} style={inputStyle}>
-              <option value="Portrait">Portrait</option>
-              <option value="News">News &amp; Clippings</option>
-              <option value="Birth">Birth</option>
-              <option value="Marriage">Marriage</option>
-              <option value="Death">Death</option>
-              <option value="Historic Event">🏛️ Historic Event</option>
-              <option value="Business">🏢 Business</option>
-            </select>
-          </div>
 
           {/* Historic Event fields */}
           {isHistoricEvent && (
@@ -413,34 +373,34 @@ const UploadPage = () => {
             </div>
           </div>
 
-          {/* Summary / extracted text */}
+          {/* Summary */}
           <div>
             <label style={labelStyle}>
-              {scanDone ? 'Extracted Text — edit and correct errors:' : 'Description / Summary:'}
+              {scanDone ? 'Summary (auto-generated — edit as needed):' : 'Description / Summary:'}
             </label>
             <textarea
               value={summary}
               onChange={e => { setSummary(e.target.value); setApproved(false); }}
-              rows="8"
+              rows="5"
               placeholder={
                 isHistoricEvent ? 'Describe what happened during this event...'
                 : isBusiness ? 'Describe the business, its history, products or services...'
-                : 'Summary of the record...'
+                : 'Brief summary of the record...'
               }
               style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', lineHeight: '1.6' }}
             />
             {scanDone && (
               <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#e65100', fontStyle: 'italic' }}>
-                ⚠️ OCR text may have errors — please read carefully and fix names, dates, and words before approving.
+                ⚠️ OCR may have errors — please read carefully and fix names, dates, and words before approving.
               </p>
             )}
           </div>
         </div>
 
-        {/* ── STEP 3: Approve ───────────────────────────────────────────────── */}
+        {/* ── STEP 4: Approve ───────────────────────────────────────────────── */}
         <div style={{ backgroundColor: approved ? '#e8f5e9' : '#f5f5f5', border: `2px solid ${approved ? '#4caf50' : '#ccc'}`, borderRadius: '8px', padding: '16px' }}>
           <p style={stepTitleStyle}>
-            {approved ? '✅ Step 3 — Record approved — ready to save' : '✅ Step 3 — Approve this record before saving'}
+            {approved ? '✅ Step 4 — Record approved — ready to save' : '✅ Step 4 — Approve this record before saving'}
           </p>
 
           {!approved ? (
@@ -451,7 +411,7 @@ const UploadPage = () => {
               <button
                 type="button"
                 onClick={() => setApproved(true)}
-                style={{ ...btnStyle, backgroundColor: '#2e7d32', fontSize: '1rem' }}
+                style={{ ...btnStyle, backgroundColor: '#2e7d32', fontSize: '1rem', width: '100%' }}
               >
                 ✅ Approve Record
               </button>
@@ -474,7 +434,7 @@ const UploadPage = () => {
                   onClick={() => setApproved(false)}
                   style={{ ...btnStyle, backgroundColor: '#888', fontSize: '0.9rem' }}
                 >
-                  ✏️ Go back and edit
+                  ✏️ Edit
                 </button>
               </div>
             </>

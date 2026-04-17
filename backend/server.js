@@ -208,7 +208,7 @@ app.post('/api/archive/analyze', authMiddleware, upload.single('image'), async (
     // Newspaper name
     const knownPapers = ['El Cronista','La Prensa','El Heraldo','El Tiempo',
       'La Tribuna','Diario El Día','El Pueblo','La Época','El Comercio',
-      'Diario de Honduras','La Gaceta'];
+      'Diario de Honduras','La Gaceta', 'Revista Tegucigalpa'];
     let newspaperName = '';
     for (const paper of knownPapers) {
       if (fullText.toLowerCase().includes(paper.toLowerCase())) {
@@ -222,14 +222,14 @@ app.post('/api/archive/analyze', authMiddleware, upload.single('image'), async (
     // Location
     const cities = ['Tegucigalpa','San Pedro Sula','La Ceiba','Comayagua',
       'Santa Rosa de Copán','Choluteca','El Progreso','Danlí','Juticalpa',
-      'Gracias','Yoro','Tela','Trujillo','Nacaome','Siguatepeque'];
+      'Gracias','Yoro','Tela','Trujillo','Nacaome','Siguatepeque','La Paz','Catacamas', 'Roatan','Olanchito'];
     let location = '';
     for (const city of cities) {
       if (fullText.includes(city)) { location = city; break; }
     }
 
     // Names
-    const nameRegex = /\b([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+(?:\s[A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+){1,3})\b/g;
+    const nameRegex = /\b([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+(?:\s[A-ZÁÉÍÓÚÑÜ]\.?){0,2}(?:\s[A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+){1,2})\b/g;
     const stopWords = ['Honduras','Tegucigalpa','Republica','Gobierno','General',
       'Coronel','Doctor','Señor','Señora','Enero','Febrero','Marzo','Abril',
       'Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];

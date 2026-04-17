@@ -156,6 +156,123 @@ app.post('/api/archive/scan', authMiddleware, upload.single('image'), async (req
   }
 });
 
+app.post('/api/archive/scan', authMiddleware, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+
+    console.log('🔍 Starting OCR on:', req.file.path);
+
+    const { data: { text } } = await Tesseract.recognize(
+      req.file.path,
+      'spa+eng',
+      { logger: m => console.log(m.status) }
+    );
+
+    const extractedText = text.trim();
+    console.log('✅ OCR done, chars:', extractedText.length);
+
+    res.json({
+      fullText: extractedText,
+      summary: extractedText,
+      imageUrl: req.file.path,
+      cloudinaryId: req.file.filename
+    });
+
+  } catch (error) {
+    console.error('❌ OCR error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── POST analyze — smart text parser (FREE) ───────────────────────────────────
+app.post('/api/archive/analyze', authMiddleware, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+
+    const { data: { text } } = await Tesseract.recognize(
+      req.file.path, 'spa+eng',
+      { logger: m => console.log(m.status) }
+    );
+    const fullText = text.trim();
+
+    const lines = fullText.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // Dates
+    const dateRegex = /\b(\d{1,2}[\s\/\-](?:de\s)?(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)[\s\/\-](?:de\s)?\d{2,4}|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})\b/gi;
+    const dates = [...fullText.matchAll(dateRegex)].map(m => m[0]);
+
+    // Page number
+    const pageMatch = fullText.match(/p[áa]g(?:ina)?\.?\s*(\d+)/i);
+    const pageNumber = pageMatch ? pageMatch[1] : '';
+
+    // Newspaper name
+    const knownPapers = ['El Cronista','La Prensa','El Heraldo','El Tiempo',
+      'La Tribuna','Diario El Día','El Pueblo','La Época','El Comercio',
+      'Diario de Honduras','La Gaceta'];
+    let newspaperName = '';
+    for (const paper of knownPapers) {
+      if (fullText.toLowerCase().includes(paper.toLowerCase())) {
+        newspaperName = paper; break;
+      }
+    }
+    if (!newspaperName && lines[0] && lines[0].length < 60) {
+      newspaperName = lines[0];
+    }
+
+    // Location
+    const cities = ['Tegucigalpa','San Pedro Sula','La Ceiba','Comayagua',
+      'Santa Rosa de Copán','Choluteca','El Progreso','Danlí','Juticalpa',
+      'Gracias','Yoro','Tela','Trujillo','Nacaome','Siguatepeque'];
+    let location = '';
+    for (const city of cities) {
+      if (fullText.includes(city)) { location = city; break; }
+    }
+
+    // Names
+    const nameRegex = /\b([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+(?:\s[A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+){1,3})\b/g;
+    const stopWords = ['Honduras','Tegucigalpa','Republica','Gobierno','General',
+      'Coronel','Doctor','Señor','Señora','Enero','Febrero','Marzo','Abril',
+      'Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const nameMatches = [...fullText.matchAll(nameRegex)]
+      .map(m => m[0])
+      .filter(n => !stopWords.some(s => n.includes(s)));
+    const names = [...new Set(nameMatches)].slice(0, 6);
+
+    // Category detection
+    const lower = fullText.toLowerCase();
+    let category = 'News';
+    if (/falleci|defunci|muerte|murió|luto|sepelio|entierro|funeral/.test(lower)) category = 'Death';
+    else if (/nacimiento|nació|bautizo|bautismo/.test(lower)) category = 'Birth';
+    else if (/matrimonio|casamiento|nupcias|boda|desposaron/.test(lower)) category = 'Marriage';
+    else if (/batalla|guerra|revolución|elecciones|congreso|decreto|gobierno/.test(lower)) category = 'Historic Event';
+    else if (/comercio|empresa|negocio|establecimiento|industria|fábrica/.test(lower)) category = 'Business';
+
+    // Summary
+    const summary = fullText.replace(/\s+/g, ' ').substring(0, 500);
+
+    res.json({
+      fullText,
+      summary,
+      names,
+      eventDate: dates[0] || '',
+      publicationDate: dates[1] || dates[0] || '',
+      location,
+      newspaperName,
+      pageNumber,
+      category,
+      countryOfOrigin: location ? 'Honduras' : '',
+      imageUrl: req.file.path,
+      cloudinaryId: req.file.filename,
+    });
+
+  } catch (error) {
+    console.error('❌ Analyze error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
 // ── GET single record ─────────────────────────────────────────────────────────
 app.get('/api/archive/:id', async (req, res) => {
   try {

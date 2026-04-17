@@ -131,11 +131,20 @@ const UploadPage = () => {
 
   // ── AI Auto-fill ────────────────────────────────────────────────────────────
   const handleAnalyze = async () => {
-         if (!image) return;
-          setScanning(true);
-          setScanDone(false);
-          setApproved(false);
-     try {
+    // 1. Token Check
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Session expired. Please log in again.");
+      navigate('/login');
+      return;
+    }
+
+    if (!image) return;
+    setScanning(true);
+    setScanDone(false);
+    setApproved(false);
+
+    try {
       const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result.split(',')[1]);
@@ -143,38 +152,40 @@ const UploadPage = () => {
         reader.readAsDataURL(image);
       });
 
-       const res = await axios.post(
+      const res = await axios.post(
         'https://honduras-archive-v2.onrender.com/api/archive/analyze',
         { image: base64, category },
-        { headers: { 'x-auth-token': localStorage.getItem('token') } }
+        { headers: { 'x-auth-token': token } } // Use the 'token' variable
       );
-       const d = res.data;
+      
+      const d = res.data;
 
-      if (d.summary)                { setSummary(d.summary); }
-      if (d.eventDate)              { setEventDate(d.eventDate); }
-      if (d.publicationDate)        { setPublicationDate(d.publicationDate); }
-      if (d.location)               { setLocation(d.location); }
-      if (d.newspaperName)          { setNewspaperName(d.newspaperName); }
-      if (d.pageNumber)             { setPageNumber(d.pageNumber); }
-      if (d.names?.length)          { setNames(d.names); }
-      if (d.countryOfOrigin)        { setCountryOfOrigin(d.countryOfOrigin); }
-      if (d.eventName)              { setEventName(d.eventName); }
+      // Your existing form logic (these are all correctly inside the try block)
+      if (d.summary)           { setSummary(d.summary); }
+      if (d.eventDate)         { setEventDate(d.eventDate); }
+      if (d.publicationDate)   { setPublicationDate(d.publicationDate); }
+      if (d.location)          { setLocation(d.location); }
+      if (d.newspaperName)     { setNewspaperName(d.newspaperName); }
+      if (d.pageNumber)        { setPageNumber(d.pageNumber); }
+      if (d.names?.length)     { setNames(d.names); }
+      if (d.countryOfOrigin)   { setCountryOfOrigin(d.countryOfOrigin); }
+      if (d.eventName)         { setEventName(d.eventName); }
       if (d.peopleInvolved?.length) { setPeopleInvolved(d.peopleInvolved); }
-      if (d.businessName)           { setBusinessName(d.businessName); }
-      if (d.businessType)           { setBusinessType(d.businessType); }
-      if (d.owner)                  { setOwner(d.owner); }
-      if (d.yearFounded)            { setYearFounded(d.yearFounded); }
-      if (d.imageUrl)               { setScannedImageUrl(d.imageUrl); }
-      if (d.cloudinaryId)           { setScannedCloudinaryId(d.cloudinaryId); }
+      if (d.businessName)      { setBusinessName(d.businessName); }
+      if (d.businessType)      { setBusinessType(d.businessType); }
+      if (d.owner)             { setOwner(d.owner); }
+      if (d.yearFounded)       { setYearFounded(d.yearFounded); }
+      if (d.imageUrl)          { setScannedImageUrl(d.imageUrl); }
+      if (d.cloudinaryId)      { setScannedCloudinaryId(d.cloudinaryId); }
 
-       setScanDone(true);
+      setScanDone(true); 
     } catch (err) {
       console.error('AI Analyze error:', err);
       alert('Analysis failed: ' + (err.response?.data?.error || err.message));
     } finally {
       setScanning(false);
     }
-  };
+  }; 
   // ── Submit — only works after human approves ────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();

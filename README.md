@@ -2,7 +2,7 @@
 
 # 🇭🇳 Recuerdos de Honduras
 
-> A digital archive preserving Honduran historical records — for genealogy researchers, historians, academics, and the Honduran diaspora worldwide.
+> A digital archive preserving Honduran historical records — for genealogy researchers, historians, academics, graphic designers will found nteresting the business advertisement because of the evolution in style, type trought the time.
 
 ---
 
@@ -11,6 +11,8 @@
 **Recuerdos de Honduras** is an open digital archive dedicated to preserving and making accessible historical records from Honduras. From newspaper clippings and portraits to birth, marriage, and death records, the archive brings together primary sources that document the lives of people and the events that shaped Honduran history.
 
 Whether you are tracing your family roots, conducting academic research, or simply exploring Honduras's rich past, Recuerdos de Honduras provides a searchable, citable, and growing collection of digitized historical materials.
+This new version is able to scann document, fill most of the form, and display a radomly document during 24 hours ,after that teh system display another one.
+
 
 ---
 
@@ -26,6 +28,7 @@ Whether you are tracing your family roots, conducting academic research, or simp
 - 🌐 **Multilingual interface** — English and Spanish support via i18n
 - 🔐 **Admin panel** — Secure admin login for uploading, editing, and deleting records
 - 📃 **Pagination** — Smooth browsing across large collections
+- 
 
 ---
 

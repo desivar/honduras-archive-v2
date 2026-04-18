@@ -203,7 +203,7 @@ export default function TodayInHistory() {
                   }}>
                  {/* Record image */}
                  {record.imageUrl && (
-                 <div style={{ width: '70%', 
+                 <div style={{ width: '100%', 
                  background: 'rgba(0,0,0,0.2)', 
                  borderBottom: '1px solid rgba(210,175,90,0.2)',
                  display: 'flex',

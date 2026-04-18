@@ -201,12 +201,21 @@ export default function TodayInHistory() {
                     overflow: 'hidden',
                     cursor: 'pointer',
                   }}>
-                    {/* Record image */}
-                    {record.imageUrl && (
-                      <div style={{ width: '100%', height: '180px', overflow: 'hidden', borderBottom: '1px solid rgba(210,175,90,0.2)' }}>
-                        <img src={record.imageUrl} alt={displayName}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
-                      </div>
+                   {/* Record image */}
+                   {record.imageUrl && (
+                   <div style={{ width: '100%',
+                    background: 'rgba(0,0,0,0.2)',
+                     borderBottom: '1px solid rgba(210,175,90,0.2)', 
+                     display: 'flex',
+                      justifyContent: 'center' }}>
+                    <img src={record.imageUrl} 
+                    alt={displayName}
+                    style={{ width: '100%', 
+                    height: 'auto', 
+                    objectFit: 'contain', 
+                    opacity: 0.85, 
+                    display: 'block' }} />
+                   </div>
                     )}
 
                     {/* Record info */}

@@ -111,13 +111,24 @@ const RecordDetail = () => {
   return (
     <div style={{ backgroundColor: '#EFE7DD', minHeight: '100vh', padding: '40px' }}>
 
-      <button onClick={() => navigate(-1)} style={{
-        backgroundColor: 'transparent', color: '#737958', border: '2px solid #737958',
-        padding: '10px 20px', borderRadius: '6px', cursor: 'pointer',
-        fontSize: '1rem', marginBottom: '20px'
-      }}>
-        ← Back
-      </button>
+     <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+  <button onClick={() => navigate(-1)} style={{
+    backgroundColor: 'transparent', color: '#737958', border: '2px solid #737958',
+    padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem'
+  }}>
+    ← Back
+  </button>
+
+  {/* Edit button — only shows if logged in as admin */}
+  {localStorage.getItem('token') && (
+    <button onClick={() => navigate(`/edit/${id}`)} style={{
+      backgroundColor: '#737958', color: 'white', border: 'none',
+      padding: '10px 20px', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem'
+    }}>
+      ✏️ Edit Record
+    </button>
+  )}
+</div>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'start' }}>
 

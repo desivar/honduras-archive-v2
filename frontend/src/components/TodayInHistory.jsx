@@ -112,7 +112,7 @@ export default function TodayInHistory() {
           position: 'relative',
           borderRadius: '12px',
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, #847066 0%, #eddcd2 40%, #ddbea9 70%, #9c5526 100%)',
+          background: 'linear-gradient(135deg, #5b2d16 0%, #a56844 40%, #ddbea9 70%, #9c5526 100%)',
           boxShadow: '0 8px 40px rgba(40,20,5,0.35), inset 0 1px 0 rgba(255,220,140,0.15)',
           border: '1px solid rgba(180,130,140,0.4)',
         }}>

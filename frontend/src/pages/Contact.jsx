@@ -11,7 +11,7 @@ const Contact = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const WHATSAPP_NUMBER = '+504XXXXXXXX'; // Replace with your actual Honduras WhatsApp number
+  const WHATSAPP_NUMBER = '+50498497898'; // Replace with your actual Honduras WhatsApp number
 
   const handleChange = (e) => {
     setFormData({
